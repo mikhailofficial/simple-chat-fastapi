@@ -13,15 +13,8 @@ class Message(Base):
 
     id = Column(Integer, primary_key=True)
     content = Column(String, nullable=False)
-    date_created = Column(DateTime, default=datetime.now())
+    created_at = Column(String, nullable=False)
     created_by = Column(String, nullable=False)
-
-
-class User(Base):
-    __tablename__ = 'users'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
 
 
 Base.metadata.create_all(engine)

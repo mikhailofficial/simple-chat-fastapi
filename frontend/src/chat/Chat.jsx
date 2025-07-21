@@ -25,8 +25,8 @@ export function Chat() {
                 const data = await makeRequest("messages", { method: "GET" });
                 const formattedMessages = data.map(element => ({
                     text: element.content,
+                    timestamp: element.created_at,
                     sender: element.created_by,
-                    timestamp: element.date_created
                 }));
                 setMessages(formattedMessages);
             } catch (err) {
@@ -47,15 +47,15 @@ export function Chat() {
                 method: "POST",
                 body: JSON.stringify({
                     "content": inputValue,
-                    "user_id": user.username
+                    "created_at": timestamp,
+                    "created_by": user.username,
                 }),
-            }
-            )
+            })
         } catch (err) {
             setError(err.message || "Failed to send message.")
         } 
 
-        setMessages([...messages, { text: inputValue, sender: user.username, timestamp }]);
+        setMessages([...messages, { text: inputValue, sender: user.username, timestamp: timestamp }]);
         setInputValue('')
     };
 

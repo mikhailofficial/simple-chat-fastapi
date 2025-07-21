@@ -22,16 +22,19 @@ async def get_messages(db: Annotated[Session, Depends(get_db)]):
 @router.post('/send-message')
 async def send_message(request_obj: Annotated[Request, Body], db: Annotated[Session, Depends(get_db)]):
     try:
-        user_details = authenticate_and_get_user_details(request_obj)
-        user_id = user_details.get("user_id")
+        # user_details = authenticate_and_get_user_details(request_obj)
+        # user_id = user_details.get("user_id")
 
         request_data = await request_obj.json()
         content = request_data.get("content")
+        created_at = request_data.get("created_at")
+        created_by = request_data.get("created_by")
 
         new_message = create_message(
             db=db,
             content=content,
-            created_by=user_id
+            created_at=created_at,
+            created_by=created_by,
         )
 
         db.commit()
@@ -39,7 +42,7 @@ async def send_message(request_obj: Annotated[Request, Body], db: Annotated[Sess
         return {
             "id": new_message.id,
             "content": new_message.content,
-            "date_created": new_message.date_created,
+            "created_at": new_message.created_at,
             "created_by": new_message.created_by
         }
 

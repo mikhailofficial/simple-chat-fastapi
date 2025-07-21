@@ -6,10 +6,12 @@ from .models import Message
 def create_message(
     db: Session,
     content: str,
+    created_at: str,
     created_by: str
 ):
     db_message = Message(
         content=content,
+        created_at=created_at,
         created_by=created_by
     )
     
