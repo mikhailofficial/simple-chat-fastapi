@@ -4,10 +4,19 @@ from sqlalchemy.orm import Session
 
 from ..utils import authenticate_and_get_user_details
 from ..database.models import get_db
-from ..database.db import create_message
+from ..database.db import create_message, get_all_messages
 
 
 router = APIRouter()
+
+
+@router.get('/messages')
+async def get_messages(db: Annotated[Session, Depends(get_db)]):
+    try:
+        messages = get_all_messages(db)
+        return messages
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.post('/send-message')

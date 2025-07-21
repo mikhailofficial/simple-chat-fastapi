@@ -1,5 +1,6 @@
 from sqlalchemy.orm import Session
-from . import models
+
+from .models import Message
 
 
 def create_message(
@@ -7,7 +8,7 @@ def create_message(
     content: str,
     created_by: str
 ):
-    db_message = models.Message(
+    db_message = Message(
         content=content,
         created_by=created_by
     )
@@ -17,3 +18,7 @@ def create_message(
     db.refresh(db_message)
 
     return db_message
+
+
+def get_all_messages(db: Session):
+    return db.query(Message).all()

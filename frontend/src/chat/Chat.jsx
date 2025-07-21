@@ -1,5 +1,5 @@
 import 'react'
-import {useState} from 'react'
+import {useState, useEffect} from 'react'
 import {useApi} from '../utils/api.js'
 import {useClerk} from '@clerk/clerk-react'
 
@@ -18,6 +18,24 @@ export function Chat() {
     const [inputValue, setInputValue] = useState('')
     const {user} = useClerk()
     const {makeRequest} = useApi()
+
+    useEffect(() => {
+        const loadMessages = async () => {
+            try {
+                const data = await makeRequest("messages", { method: "GET" });
+                const formattedMessages = data.map(element => ({
+                    text: element.content,
+                    sender: element.created_by,
+                    timestamp: element.date_created
+                }));
+                setMessages(formattedMessages);
+            } catch (err) {
+                console.error("Error with recieving the messages:", err.message || "Didn't manage to load the messages.");
+            }
+        };
+
+        loadMessages();
+    }, []);
 
     const handleSendMessage = async () => {
         if (!inputValue.trim()) return
@@ -61,9 +79,9 @@ export function Chat() {
                     value={inputValue}
                     onChange={(e) => setInputValue(e.target.value)}
                     onKeyDown={handleKeyDown}
-                    placeholder="Напишите сообщение..."
+                    placeholder="Write message..."
                 />
-                <button onClick={handleSendMessage}>Отправить</button>
+                <button onClick={handleSendMessage}>Send</button>
             </div>
         </div>
     );
