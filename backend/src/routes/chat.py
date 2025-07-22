@@ -1,10 +1,29 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Body
+from fastapi import APIRouter, Depends, HTTPException, Request, Body, WebSocket, WebSocketDisconnect
 from typing import Annotated
 from sqlalchemy.orm import Session
 
-from ..utils import authenticate_and_get_user_details
+#from ..utils import authenticate_and_get_user_details
 from ..database.models import get_db
 from ..database.db import create_message, get_all_messages
+
+
+class ConnectionManager:
+    def __init__(self):
+        self.activate_connections: list[WebSocket] = []
+
+    async def connect(self, websocket: WebSocket):
+        await websocket.accept()
+        self.activate_connections.append(websocket)
+        print(self.activate_connections)
+
+    def disconnect(self, websocket: WebSocket):
+        self.activate_connections.remove(websocket)
+
+    async def broadcast(self, message: str):
+        for connection in self.activate_connections:
+            await connection.send_text(message)
+
+manager = ConnectionManager()
 
 
 router = APIRouter()
@@ -48,3 +67,16 @@ async def send_message(request_obj: Annotated[Request, Body], db: Annotated[Sess
 
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.websocket('/ws')
+async def websocket_endpoint(websocket: WebSocket):
+    await manager.connect(websocket)
+    try:
+        while True:
+            data = await websocket.receive_text()
+            print(f"Message text was {data}")
+            await manager.broadcast(f"Message text was {data}")
+    except WebSocketDisconnect:
+        manager.disconnect(websocket)
+        await manager.broadcast(f"<System>: Someone left the chat")

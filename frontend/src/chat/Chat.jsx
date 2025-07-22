@@ -18,6 +18,7 @@ export function Chat() {
     const [inputValue, setInputValue] = useState('')
     const {user} = useClerk()
     const {makeRequest} = useApi()
+    var ws = new WebSocket("ws://localhost:8000/api/ws");
 
     useEffect(() => {
         const loadMessages = async () => {
@@ -40,6 +41,10 @@ export function Chat() {
     const handleSendMessage = async () => {
         if (!inputValue.trim()) return
         
+        if(ws.readyState === WebSocket.OPEN) {
+            ws.send(inputValue)
+        }
+
         const timestamp = new Date().toLocaleTimeString();
 
         try {
