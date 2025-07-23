@@ -154,11 +154,16 @@ export function Chat() {
         }
     };
 
+    const handleOnlineUsers = () => {
+        console.log("Online Users")
+    }
+
     return (
-        <>
-        <div className="online-users">
-            <p>Online Users ({onlineUsers})</p>
-        </div>
+        <div className="chat-wrapper">
+            <div className="online-users">
+                <button className="online-users-button" onClick={handleOnlineUsers}>Online Users ({onlineUsers})</button>
+            </div>
+
             <div className="chat-container">
                 <div className="messages">
                     {messages.map((msg, index) => (
@@ -178,6 +183,6 @@ export function Chat() {
                     <button onClick={handleSendMessage}>Send</button>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
