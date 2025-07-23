@@ -3,15 +3,24 @@ import {useState, useEffect, useRef} from 'react'
 import {useApi} from '../utils/api.js'
 import {useClerk} from '@clerk/clerk-react'
 
-const Message = ({ text, sender, timestamp }) => (
-    <div className="message">
-        <div className="message-info">
-            <span className="sender">{sender}</span>
-            <span className="timestamp">{timestamp}</span>
+const Message = ({ text, sender, timestamp }) => {
+    if (sender === '<System>') {
+        return (
+            <div className="message system-message">
+                <div className="message-text">{text}</div>
+            </div>
+        );
+    }
+    return (
+        <div className="message">
+            <div className="message-info">
+                <span className="sender">{sender}</span>
+                <span className="timestamp">{timestamp}</span>
+            </div>
+            <div className="message-text">{text}</div>
         </div>
-        <div className="message-text">{text}</div>
-    </div>
-);
+    );
+};
 
 export function Chat() {
     const [messages, setMessages] = useState([])
@@ -43,8 +52,22 @@ export function Chat() {
     useEffect(() => {
         ws.current = new WebSocket("ws://localhost:8000/api/ws");
 
+        ws.current.onopen = () => {
+            const newMessage = {
+                sender: "<System>",
+                text: `User ${user.username} entered the chat`,
+                timestamp: null,
+            };
+            ws.current.send(JSON.stringify({
+                "content": newMessage.text,
+                "created_at": newMessage.timestamp,
+                "created_by": newMessage.sender,
+            }))
+        }
+
         ws.current.onmessage = (event) => {
             const eventJSON = JSON.parse(event.data)
+            //console.log(eventJSON)
             const newMessage = {
                 text: eventJSON.content,
                 timestamp: eventJSON.created_at,
@@ -53,14 +76,28 @@ export function Chat() {
             setMessages(prevMessages => [...prevMessages, newMessage]);
         };
 
-        ws.current.onclose = (event) => {
-            console.log("Server is closed")
-        }
+        const handleBeforeUnload = () => {
+            if (ws.current && ws.current.readyState === WebSocket.OPEN) {
+                const newMessage = {
+                    sender: "<System>",
+                    text: `User ${user.username} left the chat`,
+                    timestamp: null,
+                };
+                ws.current.send(JSON.stringify({
+                    "content": newMessage.text,
+                    "created_at": newMessage.timestamp,
+                    "created_by": newMessage.sender,
+                }));
+            }
+        };
+    
+        window.addEventListener('beforeunload', handleBeforeUnload);
 
         return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
             if (ws.current) {
+                ws.current.onopen = null;
                 ws.current.onmessage = null;
-                ws.current.onclose = null;
                 ws.current.close();
             }
         };

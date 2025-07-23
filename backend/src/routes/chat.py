@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Request, Body, WebSocket, WebSocketDisconnect
 from typing import Annotated
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 #from ..utils import authenticate_and_get_user_details
 from ..database.models import get_db
@@ -77,8 +78,4 @@ async def websocket_endpoint(websocket: WebSocket):
             await manager.broadcast(data)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-        await manager.broadcast("<System>: Someone left the chat")
 
-    # while True:
-    #     data = await websocket.receive_text()
-    #     await manager.broadcast(data)

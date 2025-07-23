@@ -384,3 +384,14 @@ button {
 button:hover {
   background-color: #0056b3;
 }
+
+.system-message {
+  background-color: #f1f5f9;
+  color: #64748b;
+  font-style: italic;
+  border-left: 4px solid #2563eb;
+  border-right: 4px solid #2563eb;
+  margin: 0.5rem 0;
+  padding: 0.5rem 1rem;
+  text-align: center;
+}
