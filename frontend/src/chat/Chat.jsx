@@ -29,6 +29,7 @@ export function Chat() {
     const ws = useRef(null)
     const {makeRequest} = useApi()
     const messagesEndRef = useRef(null);
+    const [onlineUsers, setOnlineUsers] = useState(0)
 
     useEffect(() => {
         const loadMessages = async () => {
@@ -67,6 +68,11 @@ export function Chat() {
 
         ws.current.onmessage = (event) => {
             const eventJSON = JSON.parse(event.data)
+            console.log(eventJSON)
+            if(eventJSON.count) {
+                setOnlineUsers(eventJSON.count)
+                return
+            }
             //console.log(eventJSON)
             const newMessage = {
                 text: eventJSON.content,
@@ -149,24 +155,29 @@ export function Chat() {
     };
 
     return (
-        <div className="chat-container">
-            <div className="messages">
-                {messages.map((msg, index) => (
-                    <Message key={index} text={msg.text} sender={msg.sender} timestamp={msg.timestamp} />
-                ))}
-                <div ref={messagesEndRef} />
-            </div>
-
-            <div className="input-panel">
-                <input
-                    type="text"
-                    value={inputValue}
-                    onChange={(e) => setInputValue(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    placeholder="Write message..."
-                />
-                <button onClick={handleSendMessage}>Send</button>
-            </div>
+        <>
+        <div className="online-users">
+            <p>Online Users ({onlineUsers})</p>
         </div>
+            <div className="chat-container">
+                <div className="messages">
+                    {messages.map((msg, index) => (
+                        <Message key={index} text={msg.text} sender={msg.sender} timestamp={msg.timestamp} />
+                    ))}
+                    <div ref={messagesEndRef} />
+                </div>
+
+                <div className="input-panel">
+                    <input
+                        type="text"
+                        value={inputValue}
+                        onChange={(e) => setInputValue(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        placeholder="Write message..."
+                    />
+                    <button onClick={handleSendMessage}>Send</button>
+                </div>
+            </div>
+        </>
     );
 }

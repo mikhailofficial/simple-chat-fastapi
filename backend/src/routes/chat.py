@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Body, WebSocket,
 from typing import Annotated
 from sqlalchemy.orm import Session
 from datetime import datetime
+import json
 
 #from ..utils import authenticate_and_get_user_details
 from ..database.models import get_db
@@ -15,10 +16,11 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.activate_connections.append(websocket)
+        await self.broadcast(json.dumps({"count": len(self.activate_connections)}))
 
     def disconnect(self, websocket: WebSocket):
         self.activate_connections.remove(websocket)
-
+    
     async def broadcast(self, message: str):
         for connection in self.activate_connections:
             await connection.send_text(message)
@@ -78,4 +80,5 @@ async def websocket_endpoint(websocket: WebSocket):
             await manager.broadcast(data)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
+        await manager.broadcast(json.dumps({"count": len(manager.activate_connections)}))
 

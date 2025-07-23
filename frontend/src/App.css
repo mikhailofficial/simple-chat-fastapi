@@ -310,6 +310,13 @@ body {
   font-size: 0.875rem;
 }
 
+.online-users {
+  background-color: rgb(214, 214, 214);
+  width: 900px;
+  height: 25px;
+  border-radius: 5px;
+}
+
 .chat-container {
   display: flex;
   flex-direction: column;
