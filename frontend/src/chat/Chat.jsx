@@ -19,10 +19,9 @@ export function Chat() {
     const {user} = useClerk()
     const ws = useRef(null)
     const {makeRequest} = useApi()
+    const messagesEndRef = useRef(null);
 
     useEffect(() => {
-        ws.current = new WebSocket("ws://localhost:8000/api/ws");
-
         const loadMessages = async () => {
             try {
                 const data = await makeRequest("messages", { method: "GET" });
@@ -35,20 +34,22 @@ export function Chat() {
             } catch (err) {
                 console.error("Error with recieving the messages:", err.message || "Didn't manage to load the messages.");
             }
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
         };
 
         loadMessages();
+    }, []);
+
+    useEffect(() => {
+        ws.current = new WebSocket("ws://localhost:8000/api/ws");
 
         ws.current.onmessage = (event) => {
             const eventJSON = JSON.parse(event.data)
-            //console.log(eventJSON)
             const newMessage = {
                 text: eventJSON.content,
                 timestamp: eventJSON.created_at,
                 sender: eventJSON.created_by,
             };
-            console.log(newMessage.text)
-            //setMessages([...messages, { text: newMessage.text, sender: newMessage.sender, timestamp: newMessage.timestamp }]);
             setMessages(prevMessages => [...prevMessages, newMessage]);
         };
 
@@ -64,6 +65,13 @@ export function Chat() {
             }
         };
     }, []);
+
+    useEffect(() => {
+        const lastMessage = messages[messages.length - 1];
+        if(lastMessage && lastMessage.sender === user.username) {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+        }
+    }, [messages]);
 
     const handleSendMessage = async () => {
         if (!inputValue.trim()) return
@@ -81,22 +89,6 @@ export function Chat() {
             console.log("Error: Server is close but you're trying to send request")
         }
 
-        // while(true) {
-        //     if(ws.readyState === WebSocket.OPEN) {
-        //         ws.send(JSON.stringify({
-        //             "content": inputValue,
-        //             "created_at": timestamp,
-        //             "created_by": user.username,
-        //         }))
-        //         break;
-        //     }
-        //     else {
-        //         setTimeout(() => {
-        //             console.log("Server is closed")
-        //         }, 1000); 
-        //     }
-        // }
-
         try {
             const data = await makeRequest("send-message", {
                 method: "POST",
@@ -110,8 +102,6 @@ export function Chat() {
             setError(err.message || "Failed to send message.")
         } 
 
-        //setMessages([...messages, { text: inputValue, sender: user.username, timestamp: timestamp }]);
-        //setMessages(prevMessages => [...prevMessages, { text: inputValue, sender: user.username, timestamp: timestamp }]);
         setInputValue('')
     };
 
@@ -127,8 +117,9 @@ export function Chat() {
                 {messages.map((msg, index) => (
                     <Message key={index} text={msg.text} sender={msg.sender} timestamp={msg.timestamp} />
                 ))}
+                <div ref={messagesEndRef} />
             </div>
-            
+
             <div className="input-panel">
                 <input
                     type="text"
