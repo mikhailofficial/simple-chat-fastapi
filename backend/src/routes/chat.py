@@ -14,7 +14,6 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
         self.activate_connections.append(websocket)
-        print(self.activate_connections)
 
     def disconnect(self, websocket: WebSocket):
         self.activate_connections.remove(websocket)
@@ -75,8 +74,11 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             data = await websocket.receive_text()
-            print(f"Message text was {data}")
-            await manager.broadcast(f"Message text was {data}")
+            await manager.broadcast(data)
     except WebSocketDisconnect:
         manager.disconnect(websocket)
-        await manager.broadcast(f"<System>: Someone left the chat")
+        await manager.broadcast("<System>: Someone left the chat")
+
+    # while True:
+    #     data = await websocket.receive_text()
+    #     await manager.broadcast(data)

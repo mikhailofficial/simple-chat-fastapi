@@ -1,5 +1,5 @@
 import 'react'
-import {useState, useEffect} from 'react'
+import {useState, useEffect, useRef} from 'react'
 import {useApi} from '../utils/api.js'
 import {useClerk} from '@clerk/clerk-react'
 
@@ -17,10 +17,12 @@ export function Chat() {
     const [messages, setMessages] = useState([])
     const [inputValue, setInputValue] = useState('')
     const {user} = useClerk()
+    const ws = useRef(null)
     const {makeRequest} = useApi()
-    var ws = new WebSocket("ws://localhost:8000/api/ws");
 
     useEffect(() => {
+        ws.current = new WebSocket("ws://localhost:8000/api/ws");
+
         const loadMessages = async () => {
             try {
                 const data = await makeRequest("messages", { method: "GET" });
@@ -36,16 +38,64 @@ export function Chat() {
         };
 
         loadMessages();
+
+        ws.current.onmessage = (event) => {
+            const eventJSON = JSON.parse(event.data)
+            //console.log(eventJSON)
+            const newMessage = {
+                text: eventJSON.content,
+                timestamp: eventJSON.created_at,
+                sender: eventJSON.created_by,
+            };
+            console.log(newMessage.text)
+            //setMessages([...messages, { text: newMessage.text, sender: newMessage.sender, timestamp: newMessage.timestamp }]);
+            setMessages(prevMessages => [...prevMessages, newMessage]);
+        };
+
+        ws.current.onclose = (event) => {
+            console.log("Server is closed")
+        }
+
+        return () => {
+            if (ws.current) {
+                ws.current.onmessage = null;
+                ws.current.onclose = null;
+                ws.current.close();
+            }
+        };
     }, []);
 
     const handleSendMessage = async () => {
         if (!inputValue.trim()) return
-        
-        if(ws.readyState === WebSocket.OPEN) {
-            ws.send(inputValue)
-        }
 
         const timestamp = new Date().toLocaleTimeString();
+
+        if(ws.current.readyState === WebSocket.OPEN) {
+            ws.current.send(JSON.stringify({
+                "content": inputValue,
+                "created_at": timestamp,
+                "created_by": user.username,
+            }))
+        }
+        else {
+            console.log("Error: Server is close but you're trying to send request")
+        }
+
+        // while(true) {
+        //     if(ws.readyState === WebSocket.OPEN) {
+        //         ws.send(JSON.stringify({
+        //             "content": inputValue,
+        //             "created_at": timestamp,
+        //             "created_by": user.username,
+        //         }))
+        //         break;
+        //     }
+        //     else {
+        //         setTimeout(() => {
+        //             console.log("Server is closed")
+        //         }, 1000); 
+        //     }
+        // }
 
         try {
             const data = await makeRequest("send-message", {
@@ -60,7 +110,8 @@ export function Chat() {
             setError(err.message || "Failed to send message.")
         } 
 
-        setMessages([...messages, { text: inputValue, sender: user.username, timestamp: timestamp }]);
+        //setMessages([...messages, { text: inputValue, sender: user.username, timestamp: timestamp }]);
+        //setMessages(prevMessages => [...prevMessages, { text: inputValue, sender: user.username, timestamp: timestamp }]);
         setInputValue('')
     };
 

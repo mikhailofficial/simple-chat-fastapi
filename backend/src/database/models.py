@@ -2,9 +2,20 @@ from sqlalchemy import Column, Integer, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from datetime import datetime
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
 
-engine = create_engine(url="sqlite:///database.db", echo=True)
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
+DATABASE_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+
+#engine = create_engine(url="sqlite:///database.db", echo=True)
+engine = create_engine(url=DATABASE_URL, echo=True)
 Base = declarative_base()
 
 
