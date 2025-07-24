@@ -10,7 +10,7 @@ if (!PUBLISHABLE_KEY) {
 }
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  //<StrictMode>
     <App />
-  </StrictMode>,
+  //</StrictMode>,
 )

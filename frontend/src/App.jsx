@@ -1,8 +1,8 @@
-import ClerkProviderWithRoutes from "./auth/ClerkProviderWithRoutes.jsx"
+import {AuthenticationPage} from "./components/auth/AuthenticationPage.jsx"
+import ClerkProviderWithRoutes from "./components/auth/ClerkProviderWithRoutes.jsx"
 import {Routes, Route} from "react-router-dom"
-import {AuthenticationPage} from "./auth/AuthenticationPage.jsx"
 import {Layout} from "./layout/Layout.jsx"
-import {Chat} from "./chat/Chat.jsx"
+import {Chat} from "./pages/ChatPage.jsx"
 import './App.css'
 
 function App() {
