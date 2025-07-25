@@ -1,7 +1,8 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 export function useWebSocket({ username, onMessage, onOnlineCount }) {
     const ws = useRef(null);
+    const [userlist, setUserlist] = useState([])
     const onMessageRef = useRef(onMessage);
     const onOnlineCountRef = useRef(onOnlineCount);
 
@@ -9,7 +10,7 @@ export function useWebSocket({ username, onMessage, onOnlineCount }) {
     useEffect(() => { onOnlineCountRef.current = onOnlineCount }, [onOnlineCount]);
 
     useEffect(() => {
-        ws.current = new WebSocket('ws://localhost:8000/api/ws');
+        ws.current = new WebSocket('ws://localhost:8000/api/ws?username=' + username);
 
         ws.current.onopen = () => {
             const newMessage = {
@@ -31,6 +32,12 @@ export function useWebSocket({ username, onMessage, onOnlineCount }) {
             if (eventJSON.count) {
                 onOnlineCountRef.current && onOnlineCountRef.current(eventJSON.count);
                 return;
+            }
+            if(eventJSON.userlist) {
+                //userlist.current = eventJSON.userlist;
+                setUserlist(eventJSON.userlist)
+                //console.log(userlist.current)
+                return
             }
             onMessageRef.current && onMessageRef.current({
                 text: eventJSON.content,
@@ -74,5 +81,5 @@ export function useWebSocket({ username, onMessage, onOnlineCount }) {
         }
     };
 
-    return { ws, sendMessage };
+    return { ws, sendMessage, userlist };
 } 

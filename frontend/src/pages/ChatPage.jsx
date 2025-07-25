@@ -3,6 +3,7 @@ import {useState, useEffect, useRef, useCallback} from 'react'
 import {useApi} from '../hooks/useApi.js'
 import {useClerk} from '@clerk/clerk-react'
 import Message from '../components/Message.jsx'
+import User from '../components/User.jsx'
 import {useWebSocket} from '../hooks/useWebSocket.js';
 
 export function Chat() {
@@ -18,7 +19,7 @@ export function Chat() {
         (count) => setOnlineUsers(count),
         []
     )
-    const {ws, sendMessage} = useWebSocket({
+    const {ws, sendMessage, userlist} = useWebSocket({
         username: user.username,
         onMessage, 
         onOnlineCount,
@@ -89,16 +90,8 @@ export function Chat() {
         }
     };
 
-    const handleOnlineUsers = () => {
-        console.log("Online Users")
-    }
-
     return (
-        <div className="chat-wrapper">
-            <div className="online-users">
-                <button className="online-users-button" onClick={handleOnlineUsers}>Online Users ({onlineUsers})</button>
-            </div>
-
+        <div className="chat-main-layout">
             <div className="chat-container">
                 <div className="messages">
                     {messages.map((msg, index) => (
@@ -116,6 +109,20 @@ export function Chat() {
                         placeholder="Write message..."
                     />
                     <button onClick={handleSendMessage}>Send</button>
+                </div>
+            </div>
+
+            <div className="userlist-frame">
+                <div className="online-users">
+                    <span className="online-users-label">Online Users ({onlineUsers})</span>
+                </div>
+                
+                <hr className="userlist-separator" />
+
+                <div className="userlist">
+                    {userlist.map((user, index) => (
+                        <User key={index} username={user} />
+                    ))}
                 </div>
             </div>
         </div>
