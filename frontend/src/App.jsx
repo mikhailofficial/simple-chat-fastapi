@@ -2,7 +2,7 @@ import {AuthenticationPage} from "./components/auth/AuthenticationPage.jsx"
 import ClerkProviderWithRoutes from "./components/auth/ClerkProviderWithRoutes.jsx"
 import {Routes, Route} from "react-router-dom"
 import {Layout} from "./layout/Layout.jsx"
-import {Chat} from "./pages/ChatPage.jsx"
+import {Chat} from "./pages/ChatPage/ChatPage.jsx"
 import './App.css'
 
 function App() {

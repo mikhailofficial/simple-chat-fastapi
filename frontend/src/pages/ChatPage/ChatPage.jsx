@@ -1,13 +1,19 @@
 import 'react'
 import {useState, useEffect, useRef, useCallback} from 'react'
-import {useApi} from '../hooks/useApi.js'
 import {useClerk} from '@clerk/clerk-react'
-import Message from '../components/Message.jsx'
-import User from '../components/User.jsx'
-import {useWebSocket} from '../hooks/useWebSocket.js';
+
+import {useApi} from '../../hooks/useApi.js'
+import {useWebSocket} from '../../hooks/useWebSocket.js';
+
+import styles from './ChatPage.module.css'
+
+import ChatMessages from './ChatMessages.jsx'
+import ChatInput from './ChatInput.jsx'
+import ChatSidebar from './ChatSideBar.jsx'
 
 export function Chat() {
     const [messages, setMessages] = useState([])
+    const messagesEndRef = useRef(null);
     const [inputValue, setInputValue] = useState('')
     const {user} = useClerk()
     const [onlineUsers, setOnlineUsers] = useState(0)
@@ -25,7 +31,6 @@ export function Chat() {
         onOnlineCount,
       });
     const {makeRequest} = useApi()
-    const messagesEndRef = useRef(null);
 
     useEffect(() => {
         const loadMessages = async () => {
@@ -42,10 +47,10 @@ export function Chat() {
             }
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
         };
-
+    
         loadMessages();
     }, []);
-
+    
     useEffect(() => {
         const lastMessage = messages[messages.length - 1];
         if(lastMessage && lastMessage.sender === user.username) {
@@ -91,40 +96,12 @@ export function Chat() {
     };
 
     return (
-        <div className="chat-main-layout">
-            <div className="chat-container">
-                <div className="messages">
-                    {messages.map((msg, index) => (
-                        <Message key={index} text={msg.text} sender={msg.sender} timestamp={msg.timestamp} />
-                    ))}
-                    <div ref={messagesEndRef} />
-                </div>
-
-                <div className="input-panel">
-                    <input
-                        type="text"
-                        value={inputValue}
-                        onChange={(e) => setInputValue(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder="Write message..."
-                    />
-                    <button onClick={handleSendMessage}>Send</button>
-                </div>
+        <div className={styles['chat-main-layout']}>
+            <div className={styles['chat-container']}>
+                <ChatMessages messages={messages} messagesEndRef={messagesEndRef} />
+                <ChatInput inputValue={inputValue} setInputValue={setInputValue} handleSendMessage={handleSendMessage} handleKeyDown={handleKeyDown} />
             </div>
-
-            <div className="userlist-frame">
-                <div className="online-users">
-                    <span className="online-users-label">Online Users ({onlineUsers})</span>
-                </div>
-                
-                <hr className="userlist-separator" />
-
-                <div className="userlist">
-                    {userlist.map((user, index) => (
-                        <User key={index} username={user} />
-                    ))}
-                </div>
-            </div>
+            <ChatSidebar onlineUsers={onlineUsers} userlist={userlist} />
         </div>
     );
 }
