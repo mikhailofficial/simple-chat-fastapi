@@ -34,16 +34,16 @@ export function useWebSocket({ username, onMessage, onOnlineCount }) {
                 return;
             }
             if(eventJSON.userlist) {
-                //userlist.current = eventJSON.userlist;
                 setUserlist(eventJSON.userlist)
-                //console.log(userlist.current)
-                return
+                return;
             }
-            onMessageRef.current && onMessageRef.current({
-                text: eventJSON.content,
-                timestamp: eventJSON.created_at,
-                sender: eventJSON.created_by,
-            });
+            if(eventJSON.content != `User ${username} entered the chat`) {
+                onMessageRef.current && onMessageRef.current({
+                    text: eventJSON.content,
+                    timestamp: eventJSON.created_at,
+                    sender: eventJSON.created_by,
+                });
+            }
         };
 
         const handleBeforeUnload = () => {

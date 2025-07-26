@@ -42,10 +42,13 @@ export function Chat() {
                     sender: element.created_by,
                 }));
                 setMessages(formattedMessages);
+
+                setTimeout(() => {
+                    messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+                }, 100);                  
             } catch (err) {
                 console.error("Error with recieving the messages:", err.message || "Didn't manage to load the messages.");
             }
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
         };
     
         loadMessages();
@@ -53,10 +56,12 @@ export function Chat() {
     
     useEffect(() => {
         const lastMessage = messages[messages.length - 1];
-        if(lastMessage && lastMessage.sender === user.username) {
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+            if (lastMessage && lastMessage.sender === user.username) {
+            setTimeout(() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
+            }, 100);
         }
-    }, [messages]);
+    }, [messages,  user.username]);
 
     const handleSendMessage = async () => {
         if (!inputValue.trim()) return
