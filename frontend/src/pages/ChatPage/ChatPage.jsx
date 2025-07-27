@@ -24,11 +24,14 @@ export function Chat() {
         (msg) => {
             setMessages(prev => [...prev, msg]);
 
-            const headerDate = new Date(msg.timestamp);
-            if(msg.sender == '<DateHeader>') {
-                dateHeadersCreatedRef.current.add(headerDate.toDateString());
+            if(msg.sender === '<DateHeader>' && msg.timestamp) {
+                const headerDate = new Date(msg.timestamp);
+                if (!isNaN(headerDate.getTime())) {
+                    dateHeadersCreatedRef.current.add(headerDate.toDateString());
+                }
             }
-        }
+        },
+        []
     );
     const onOnlineCount = useCallback(
         (count) => setOnlineUsers(count),
@@ -38,7 +41,7 @@ export function Chat() {
         username: user.username,
         onMessage, 
         onOnlineCount,
-        dateHeadersCreatedRef: dateHeadersCreatedRef.current,
+        dateHeadersCreated: dateHeadersCreatedRef.current,
       });
     const {makeRequest} = useApi()
 
@@ -46,11 +49,6 @@ export function Chat() {
         const loadMessages = async () => {
             try {
                 const data = await makeRequest("messages", { method: "GET" });
-                // const formattedMessages = data.map(element => ({
-                //     text: element.content,
-                //     timestamp: element.created_at,
-                //     sender: element.created_by,
-                // }));
                 const formattedMessages = [];
                 let lastDate = null;
 
@@ -59,17 +57,33 @@ export function Chat() {
                     const currentDate = messageDate ? new Date(
                         messageDate.getFullYear(),
                         messageDate.getMonth(),
-                        messageDate.getDate()
+                        messageDate.getDate(),
                     ) : null;
 
                     if(shouldShowDateHeader(messageDate, lastDate)) {
+                        let timestamp;
+                        
+                        const today = new Date();
+                        const yesterday = new Date(today);
+                        yesterday.setDate(yesterday.getDate() - 1);
+                        
+                        if(today.toDateString() === messageDate.toDateString()) {
+                            timestamp = 'Today';
+                        }
+                        else if(yesterday.toDateString() === messageDate.toDateString()) {
+                            timestamp = 'Yesterday';
+                        }
+                        else {
+                            timestamp = messageDate.toLocaleDateString('en-US');
+                        }
+
                         formattedMessages.push({
                             text: null,
-                            timestamp: messageDate.toLocaleDateString('ru-RU'),
+                            timestamp: timestamp,
                             sender: '<DateHeader>',
                         });
                         lastDate = currentDate;
-                        dateHeadersCreatedRef.current.add(currentDate.toDateString());
+                        dateHeadersCreatedRef.current.add(messageDate.toDateString());
                     }
 
                     formattedMessages.push({
@@ -101,7 +115,7 @@ export function Chat() {
     }, [messages,  user.username]);
 
     const handleSendMessage = async () => {
-        if (!inputValue.trim()) return
+        if (!inputValue.trim()) return;
 
         const timestamp = new Date().toLocaleString();
 
@@ -109,10 +123,10 @@ export function Chat() {
             sendMessage({"content": inputValue,
                 "created_at": timestamp,
                 "created_by": user.username
-            })
+            });
         }
         else {
-            console.log("Error: Server is close but you're trying to send request")
+            console.log("Error: Server is close but you're trying to send request");
         }
 
         try {
@@ -123,12 +137,12 @@ export function Chat() {
                     "created_at": timestamp,
                     "created_by": user.username,
                 }),
-            })
+            });
         } catch (err) {
-            setError(err.message || "Failed to send message.")
+            setError(err.message || "Failed to send message.");
         } 
 
-        setInputValue('')
+        setInputValue('');
     };
 
     const handleKeyDown = (event) => {

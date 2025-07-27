@@ -49,16 +49,35 @@ export function useWebSocket({ username, onMessage, onOnlineCount, dateHeadersCr
                 ) : null;
 
                 const shouldShowDateHeader = currentDate &&
-                    (!lastDateRef.current || currentDate.getTime() !== lastDateRef.current.getTime());
+                    (!lastDateRef.current || currentDate.getTime() !== lastDateRef.current.getTime()) &&
+                    !dateHeadersCreated.has(currentDate.toDateString());
 
-                if(shouldShowDateHeader && dateHeadersCreated) {
+                if(shouldShowDateHeader) {
                     lastDateRef.current = currentDate;
+
+                    let timestamp;
+
+                    const today = new Date();
+                    const yesterday = new Date(today);
+                    yesterday.setDate(yesterday.getDate() - 1);
+                    
+                    if(today.toDateString() === parsedDate.toDateString()) {
+                        timestamp = 'Today';
+                    }
+                    else if(yesterday.toDateString() === parsedDate.toDateString()) {
+                        timestamp = 'Yesterday';
+                    }
+                    else {
+                        timestamp = parsedDate.toLocaleDateString('en-US');
+                    }
+
                     onMessageRef.current && onMessageRef.current({
                         text: null,
-                        timestamp: parsedDate.toLocaleDateString('ru-RU'),
+                        timestamp: timestamp,
                         sender: '<DateHeader>',
-                    })
+                    });
                 }
+                
                 const timestamp = (parsedDate) ? parsedDate.toLocaleTimeString() : eventJSON.created_at;
                 onMessageRef.current && onMessageRef.current({
                     text: eventJSON.content,
