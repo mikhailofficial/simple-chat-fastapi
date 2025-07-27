@@ -11,6 +11,8 @@ import ChatMessages from './ChatMessages.jsx'
 import ChatInput from './ChatInput.jsx'
 import ChatSidebar from './ChatSideBar.jsx'
 
+import {parseTimestamp, shouldShowDateHeader} from '../../utils/dateUtils.js'
+
 export function Chat() {
     const [messages, setMessages] = useState([])
     const messagesEndRef = useRef(null);
@@ -36,18 +38,44 @@ export function Chat() {
         const loadMessages = async () => {
             try {
                 const data = await makeRequest("messages", { method: "GET" });
-                const formattedMessages = data.map(element => ({
-                    text: element.content,
-                    timestamp: element.created_at,
-                    sender: element.created_by,
-                }));
+                // const formattedMessages = data.map(element => ({
+                //     text: element.content,
+                //     timestamp: element.created_at,
+                //     sender: element.created_by,
+                // }));
+                const formattedMessages = [];
+                let lastDate = null;
+
+                data.forEach(element => {
+                    const messageDate = parseTimestamp(element.created_at);
+                    const currentDate = messageDate ? new Date(
+                        messageDate.getFullYear(),
+                        messageDate.getMonth(),
+                        messageDate.getDate()
+                    ) : null;
+
+                    if(shouldShowDateHeader(messageDate, lastDate)) {
+                        formattedMessages.push({
+                            text: null,
+                            timestamp: messageDate.toLocaleDateString('ru-RU'),
+                            sender: '<DateHeader>',
+                        });
+                        lastDate = currentDate;
+                    }
+
+                    formattedMessages.push({
+                        text: element.content,
+                        timestamp: messageDate.toLocaleTimeString(),
+                        sender: element.created_by,
+                    });
+                })
                 setMessages(formattedMessages);
 
                 setTimeout(() => {
                     messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
                 }, 100);                  
             } catch (err) {
-                console.error("Error with recieving the messages:", err.message || "Didn't manage to load the messages.");
+                console.error("Error with receiving the messages:", err.message || "Didn't manage to load the messages.");
             }
         };
     
@@ -66,7 +94,7 @@ export function Chat() {
     const handleSendMessage = async () => {
         if (!inputValue.trim()) return
 
-        const timestamp = new Date().toLocaleTimeString();
+        const timestamp = new Date().toLocaleString();
 
         if(ws.current.readyState === WebSocket.OPEN) {
             sendMessage({"content": inputValue,

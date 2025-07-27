@@ -23,6 +23,26 @@
   animation: fadeIn 0.5s;
 }
 
+.date-header {
+  background: transparent;
+  box-shadow: none;
+  padding: 1rem 0;
+  text-align: center;
+  margin: 1rem 0;
+}
+
+.date-text {
+  color: #888;
+  font-size: 0.9em;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0.5rem 1rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 20px;
+  display: inline-block;
+}
+
 .message-info {
   font-size: 0.85em;
   color: #333;
@@ -44,3 +64,4 @@
   from { opacity: 0; transform: translateY(20px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+

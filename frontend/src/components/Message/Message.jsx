@@ -8,6 +8,13 @@ export default function Message({ text, sender, timestamp }) {
             </div>
         );
     }
+    if (sender === '<DateHeader>') {
+        return (
+            <div className={`${styles.message} ${styles['date-header']}`}>
+                <div className={styles['date-text']}>{timestamp}</div>
+            </div>
+        );
+    }
     return (
         <div className={styles.message}>
             <div className={styles['message-info']}>
