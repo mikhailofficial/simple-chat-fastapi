@@ -15,7 +15,6 @@ class ConnectionManager:
     async def connect(self, websocket: WebSocket, username: str):
         await websocket.accept()
         self.activate_connections[websocket] = username
-        await self.broadcast(json.dumps({"count": len(self.activate_connections)}))
         await self.broadcast_userlist()
 
     async def disconnect(self, websocket: WebSocket):
@@ -87,5 +86,4 @@ async def websocket_endpoint(websocket: WebSocket, username: Annotated[str, Quer
             await manager.broadcast(data)
     except WebSocketDisconnect:
         await manager.disconnect(websocket)
-        await manager.broadcast(json.dumps({"count": len(manager.activate_connections)}))
 

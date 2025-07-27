@@ -32,11 +32,9 @@ export function useWebSocket({ username, onMessage, onOnlineCount, dateHeadersCr
 
         ws.current.onmessage = (event) => {
             const eventJSON = JSON.parse(event.data);
-            if (eventJSON.count) {
-                onOnlineCountRef.current && onOnlineCountRef.current(eventJSON.count);
-                return;
-            }
             if(eventJSON.userlist) {
+                var userlist = Object.keys(eventJSON.userlist).map((key) => [key, eventJSON.userlist[key]]);
+                onOnlineCountRef.current && onOnlineCountRef.current(userlist.length);
                 setUserlist(eventJSON.userlist)
                 return;
             }
