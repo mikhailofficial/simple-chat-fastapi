@@ -1,10 +1,13 @@
 import { useEffect, useRef, useState } from 'react';
 
-export function useWebSocket({ username, onMessage, onOnlineCount }) {
+import { parseTimestamp } from '../utils/dateUtils';
+
+export function useWebSocket({ username, onMessage, onOnlineCount, dateHeadersCreated }) {
     const ws = useRef(null);
     const [userlist, setUserlist] = useState([])
     const onMessageRef = useRef(onMessage);
     const onOnlineCountRef = useRef(onOnlineCount);
+    const lastDateRef = useRef(null);
 
     useEffect(() => { onMessageRef.current = onMessage }, [onMessage]);
     useEffect(() => { onOnlineCountRef.current = onOnlineCount }, [onOnlineCount]);
@@ -38,9 +41,28 @@ export function useWebSocket({ username, onMessage, onOnlineCount }) {
                 return;
             }
             if(eventJSON.content != `User ${username} entered the chat`) {
+                const parsedDate = parseTimestamp(eventJSON.created_at);
+                const currentDate = parsedDate ? new Date(
+                    parsedDate.getFullYear(),
+                    parsedDate.getMonth(),
+                    parsedDate.getDate()
+                ) : null;
+
+                const shouldShowDateHeader = currentDate &&
+                    (!lastDateRef.current || currentDate.getTime() !== lastDateRef.current.getTime());
+
+                if(shouldShowDateHeader && dateHeadersCreated) {
+                    lastDateRef.current = currentDate;
+                    onMessageRef.current && onMessageRef.current({
+                        text: null,
+                        timestamp: parsedDate.toLocaleDateString('ru-RU'),
+                        sender: '<DateHeader>',
+                    })
+                }
+                const timestamp = (parsedDate) ? parsedDate.toLocaleTimeString() : eventJSON.created_at;
                 onMessageRef.current && onMessageRef.current({
                     text: eventJSON.content,
-                    timestamp: eventJSON.created_at,
+                    timestamp: timestamp,
                     sender: eventJSON.created_by,
                 });
             }

@@ -14,23 +14,31 @@ import ChatSidebar from './ChatSideBar.jsx'
 import {parseTimestamp, shouldShowDateHeader} from '../../utils/dateUtils.js'
 
 export function Chat() {
-    const [messages, setMessages] = useState([])
+    const [messages, setMessages] = useState([]);
     const messagesEndRef = useRef(null);
-    const [inputValue, setInputValue] = useState('')
-    const {user} = useClerk()
-    const [onlineUsers, setOnlineUsers] = useState(0)
+    const [inputValue, setInputValue] = useState('');
+    const {user} = useClerk();
+    const [onlineUsers, setOnlineUsers] = useState(0);
+    const dateHeadersCreatedRef = useRef(new Set());
     const onMessage = useCallback(
-        (msg) => setMessages(prev => [...prev, msg]),
-        []
-    )
+        (msg) => {
+            setMessages(prev => [...prev, msg]);
+
+            const headerDate = new Date(msg.timestamp);
+            if(msg.sender == '<DateHeader>') {
+                dateHeadersCreatedRef.current.add(headerDate.toDateString());
+            }
+        }
+    );
     const onOnlineCount = useCallback(
         (count) => setOnlineUsers(count),
         []
-    )
-    const {ws, sendMessage, userlist} = useWebSocket({
+    );
+    const {ws, sendMessage, userlist, } = useWebSocket({
         username: user.username,
         onMessage, 
         onOnlineCount,
+        dateHeadersCreatedRef: dateHeadersCreatedRef.current,
       });
     const {makeRequest} = useApi()
 
@@ -61,6 +69,7 @@ export function Chat() {
                             sender: '<DateHeader>',
                         });
                         lastDate = currentDate;
+                        dateHeadersCreatedRef.current.add(currentDate.toDateString());
                     }
 
                     formattedMessages.push({
