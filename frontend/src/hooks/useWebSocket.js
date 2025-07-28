@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from 'react';
 
 import { parseTimestamp } from '../utils/dateUtils';
 
+import { WS_BASE_URL } from '../config/api';
+
 export function useWebSocket({ username, onMessage, onOnlineCount, dateHeadersCreated }) {
     const ws = useRef(null);
     const [userlist, setUserlist] = useState([])
@@ -13,7 +15,7 @@ export function useWebSocket({ username, onMessage, onOnlineCount, dateHeadersCr
     useEffect(() => { onOnlineCountRef.current = onOnlineCount }, [onOnlineCount]);
 
     useEffect(() => {
-        ws.current = new WebSocket('ws://localhost:8000/api/ws?username=' + username);
+        ws.current = new WebSocket(WS_BASE_URL + username);
 
         ws.current.onopen = () => {
             const newMessage = {

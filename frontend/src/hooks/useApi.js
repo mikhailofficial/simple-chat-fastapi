@@ -1,4 +1,6 @@
-import {useAuth} from "@clerk/clerk-react"
+import { useAuth } from "@clerk/clerk-react"
+
+import { API_BASE_URL } from "../config/api"
 
 export const useApi = () => {
     const {getToken} = useAuth()
@@ -12,7 +14,7 @@ export const useApi = () => {
             }
         }
 
-        const response = await fetch(`http://localhost:8000/api/${endpoint}`, {
+        const response = await fetch(API_BASE_URL + endpoint, {
             ...defaultOptions,
             ...options,
         })
