@@ -151,11 +151,24 @@ export function Chat() {
         }
     };
 
+    const handleDeleteMessage = (messageId) => {
+        setMessages(prev => prev.filter((_, index) => index !== messageId));
+    }
+
     return (
         <div className={styles['chat-main-layout']}>
             <div className={styles['chat-container']}>
-                <ChatMessages messages={messages} messagesEndRef={messagesEndRef} />
-                <ChatInput inputValue={inputValue} setInputValue={setInputValue} handleSendMessage={handleSendMessage} handleKeyDown={handleKeyDown} />
+                <ChatMessages 
+                    messages={messages}
+                    messagesEndRef={messagesEndRef}
+                    onDeleteMessage={handleDeleteMessage}
+                />
+                <ChatInput
+                    inputValue={inputValue}
+                    setInputValue={setInputValue}
+                    handleSendMessage={handleSendMessage}
+                    handleKeyDown={handleKeyDown}
+                />
             </div>
             <ChatSidebar onlineUsers={onlineUsers} userlist={userlist} />
         </div>
