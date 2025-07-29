@@ -53,7 +53,7 @@ The app provides a seamless chat experience with modern UI/UX, real-time updates
 
 ## 🖼️ Screenshots
 
-
+<img width="1920" height="915" alt="image" src="https://github.com/user-attachments/assets/78c62ef9-3347-4d6d-9cf1-7855f0fe8df0" />
 
 ## 🚀 Getting Started
 
