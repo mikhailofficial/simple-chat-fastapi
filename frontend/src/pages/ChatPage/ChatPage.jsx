@@ -87,6 +87,7 @@ export function Chat() {
                     }
 
                     formattedMessages.push({
+                        id: element.id,
                         text: element.content,
                         timestamp: messageDate.toLocaleTimeString(),
                         sender: element.created_by,
@@ -130,7 +131,7 @@ export function Chat() {
         }
 
         try {
-            const data = await makeRequest("send-message", {
+            await makeRequest("send-message", {
                 method: "POST",
                 body: JSON.stringify({
                     "content": inputValue,
@@ -151,8 +152,24 @@ export function Chat() {
         }
     };
 
-    const handleDeleteMessage = (messageId) => {
-        setMessages(prev => prev.filter((_, index) => index !== messageId));
+    const handleDeleteMessage = async (messageId) => {
+        if(!messageId) {
+            console.log("Cannot delete message without ID (likely a WebSocket message)");
+            return;
+        }
+
+        try {
+            console.log(messageId);
+            await makeRequest("delete-message", {
+                method: "DELETE",
+                body: JSON.stringify({
+                    "id": messageId
+                }),
+            });
+            setMessages(prev => prev.filter(message => message.id !== messageId));
+        } catch(err) {
+            setError(err.message || "Failed to delete message.");
+        }
     }
 
     return (

@@ -5,7 +5,7 @@ import json
 
 #from ..utils import authenticate_and_get_user_details
 from ..database.models import get_db
-from ..database.db import create_message, get_all_messages
+from ..database.db import get_all_messages, create_message, delete_message_from_db
 
 
 class ConnectionManager:
@@ -64,8 +64,6 @@ async def send_message(request_obj: Annotated[Request, Body], db: Annotated[Sess
             created_by=created_by,
         )
 
-        db.commit()
-
         return {
             "id": new_message.id,
             "content": new_message.content,
@@ -73,6 +71,20 @@ async def send_message(request_obj: Annotated[Request, Body], db: Annotated[Sess
             "created_by": new_message.created_by
         }
 
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.delete('/delete-message')
+async def delete_message(request_obj: Annotated[Request, Body], db: Annotated[Session, Depends(get_db)]):
+    try:
+        request_data = await request_obj.json()
+        id = request_data.get("id")
+        success = delete_message_from_db(db, id)
+        if(success):
+            return {"message": "Message deleted successfully"}
+        else:
+            raise HTTPException(status_code=404, detail="Message not found")
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

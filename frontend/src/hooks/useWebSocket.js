@@ -72,6 +72,7 @@ export function useWebSocket({ username, onMessage, onOnlineCount, dateHeadersCr
                     }
 
                     onMessageRef.current && onMessageRef.current({
+                        id: null,
                         text: null,
                         timestamp: timestamp,
                         sender: '<DateHeader>',
@@ -80,6 +81,7 @@ export function useWebSocket({ username, onMessage, onOnlineCount, dateHeadersCr
                 
                 const timestamp = (parsedDate) ? parsedDate.toLocaleTimeString() : eventJSON.created_at;
                 onMessageRef.current && onMessageRef.current({
+                    id: null,
                     text: eventJSON.content,
                     timestamp: timestamp,
                     sender: eventJSON.created_by,
@@ -90,6 +92,7 @@ export function useWebSocket({ username, onMessage, onOnlineCount, dateHeadersCr
         const handleBeforeUnload = () => {
             if (ws.current && ws.current.readyState === WebSocket.OPEN) {
                 const newMessage = {
+                    id: null,
                     sender: '<System>',
                     text: `User ${username} left the chat`,
                     timestamp: null,

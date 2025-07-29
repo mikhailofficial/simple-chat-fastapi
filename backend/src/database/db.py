@@ -1,6 +1,11 @@
+from sqlalchemy import delete
 from sqlalchemy.orm import Session
 
 from .models import Message
+
+
+def get_all_messages(db: Session):
+    return db.query(Message).all()
 
 
 def create_message(
@@ -22,5 +27,11 @@ def create_message(
     return db_message
 
 
-def get_all_messages(db: Session):
-    return db.query(Message).all()
+def delete_message_from_db(db: Session, id: str):
+    message = db.query(Message).filter_by(id=id).first()
+    
+    if message:
+        db.delete(message)
+        db.commit()
+        return True
+    return False
