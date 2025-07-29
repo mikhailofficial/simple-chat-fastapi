@@ -120,18 +120,8 @@ export function Chat() {
 
         const timestamp = new Date().toLocaleString();
 
-        if(ws.current.readyState === WebSocket.OPEN) {
-            sendMessage({"content": inputValue,
-                "created_at": timestamp,
-                "created_by": user.username
-            });
-        }
-        else {
-            console.log("Error: Server is close but you're trying to send request");
-        }
-
         try {
-            await makeRequest("send-message", {
+            const response = await makeRequest("send-message", {
                 method: "POST",
                 body: JSON.stringify({
                     "content": inputValue,
@@ -139,9 +129,21 @@ export function Chat() {
                     "created_by": user.username,
                 }),
             });
+
+            if(ws.current.readyState === WebSocket.OPEN) {
+                sendMessage({
+                    "id": response.id,
+                    "content": inputValue,
+                    "created_at": timestamp,
+                    "created_by": user.username
+                });
+            }
+            else {
+                console.log("Error: Server is close but you're trying to send request");
+            }
         } catch (err) {
-            setError(err.message || "Failed to send message.");
-        } 
+            console.error("Failed to send message:", err);
+        }
 
         setInputValue('');
     };
@@ -154,12 +156,11 @@ export function Chat() {
 
     const handleDeleteMessage = async (messageId) => {
         if(!messageId) {
-            console.log("Cannot delete message without ID (likely a WebSocket message)");
+            console.log("Cannot delete message without ID");
             return;
         }
 
         try {
-            console.log(messageId);
             await makeRequest("delete-message", {
                 method: "DELETE",
                 body: JSON.stringify({
@@ -168,9 +169,9 @@ export function Chat() {
             });
             setMessages(prev => prev.filter(message => message.id !== messageId));
         } catch(err) {
-            setError(err.message || "Failed to delete message.");
+            console.error("Failed to delete message:", err);
         }
-    }
+    };
 
     return (
         <div className={styles['chat-main-layout']}>

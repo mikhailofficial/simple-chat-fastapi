@@ -81,7 +81,7 @@ export function useWebSocket({ username, onMessage, onOnlineCount, dateHeadersCr
                 
                 const timestamp = (parsedDate) ? parsedDate.toLocaleTimeString() : eventJSON.created_at;
                 onMessageRef.current && onMessageRef.current({
-                    id: null,
+                    id: eventJSON.id || null, 
                     text: eventJSON.content,
                     timestamp: timestamp,
                     sender: eventJSON.created_by,
