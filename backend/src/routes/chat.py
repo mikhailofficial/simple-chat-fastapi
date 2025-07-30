@@ -2,10 +2,13 @@ from fastapi import APIRouter, Depends, HTTPException, Request, Query, Body, Web
 from typing import Annotated
 from sqlalchemy.orm import Session
 import json
+from pydantic import ValidationError
 
 #from ..utils import authenticate_and_get_user_details
 from ..database.models import get_db
 from ..database.db import get_all_messages, create_message, delete_message_from_db
+
+from ..schemas.message import MessageListResponse, CreateMessageRequest, CreateMessageResponse, DeleteMessageRequest
 
 
 class ConnectionManager:
@@ -40,6 +43,7 @@ router = APIRouter()
 @router.get('/messages')
 async def get_messages(db: Annotated[Session, Depends(get_db)]):
     try:
+        #messages = MessageListResponse(messages=get_all_messages(db))
         messages = get_all_messages(db)
         return messages
     except Exception as e:
@@ -47,40 +51,29 @@ async def get_messages(db: Annotated[Session, Depends(get_db)]):
 
 
 @router.post('/send-message')
-async def send_message(request_obj: Annotated[Request, Body], db: Annotated[Session, Depends(get_db)]):
+async def send_message(message_request: Annotated[CreateMessageRequest, Body], db: Annotated[Session, Depends(get_db)]):
     try:
         # user_details = authenticate_and_get_user_details(request_obj)
         # user_id = user_details.get("user_id")
 
-        request_data = await request_obj.json()
-        content = request_data.get("content")
-        created_at = request_data.get("created_at")
-        created_by = request_data.get("created_by")
-
         new_message = create_message(
             db=db,
-            content=content,
-            created_at=created_at,
-            created_by=created_by,
+            content=message_request.content,
+            created_at=message_request.created_at,
+            created_by=message_request.created_by,
         )
 
-        return {
-            "id": new_message.id,
-            "content": new_message.content,
-            "created_at": new_message.created_at,
-            "created_by": new_message.created_by
-        }
+        message_response = CreateMessageResponse(id=new_message.id)
 
+        return message_response
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.delete('/delete-message')
-async def delete_message(request_obj: Annotated[Request, Body], db: Annotated[Session, Depends(get_db)]):
+async def delete_message(message_request: Annotated[DeleteMessageRequest, Body], db: Annotated[Session, Depends(get_db)]):
     try:
-        request_data = await request_obj.json()
-        id = request_data.get("id")
-        success = delete_message_from_db(db, id)
+        success = delete_message_from_db(db, message_request.id)
         if(success):
             return {"message": "Message deleted successfully"}
         else:
