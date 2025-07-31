@@ -48,7 +48,7 @@ export function Chat() {
     useEffect(() => {
         const loadMessages = async () => {
             try {
-                const data = await makeRequest("messages", { method: "GET" });
+                const data = Object.values(await makeRequest("messages", { method: "GET" }))[0];
                 const formattedMessages = [];
                 let lastDate = null;
 

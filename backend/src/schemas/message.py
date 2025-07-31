@@ -1,16 +1,15 @@
-from pydantic import BaseModel, ConfigDict
-from typing import List
-from ..database.models import Message
+from pydantic import BaseModel
 
 
 class MessageBase(BaseModel):
     id: int
+    content: str
+    created_at: str
+    created_by: str
 
 
 class MessageListResponse(BaseModel):
-    model_config = ConfigDict(arbitrary_types_allowed=True)
-
-    messages: List[Message]
+    messages: list[MessageBase]
 
 
 class CreateMessageRequest(BaseModel):
@@ -19,9 +18,13 @@ class CreateMessageRequest(BaseModel):
     created_by: str
 
 
-class CreateMessageResponse(MessageBase):
-    pass
+class CreateMessageResponse(BaseModel):
+    id: int
 
 
-class DeleteMessageRequest(MessageBase):
-    pass
+class DeleteMessageRequest(BaseModel):
+    id: int
+
+
+class DeleteMessageResponse(BaseModel):
+    success: bool
