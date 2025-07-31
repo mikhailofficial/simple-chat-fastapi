@@ -5,7 +5,7 @@ from sqlalchemy.orm import sessionmaker
 from dotenv import load_dotenv
 import os
 
-from ..schemas.message import MessageBase
+from ..schemas.message import MessageListResponse
 
 
 load_dotenv()
@@ -30,7 +30,7 @@ class Message(Base):
     created_by = Column(String, nullable=False)
 
     def to_pydantic(self):
-        return MessageBase(
+        return MessageListResponse.MessageListResponseItem(
             id=self.id,
             content=self.content,
             created_at=self.created_at,
