@@ -1,19 +1,18 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, Query, Body, WebSocket, WebSocketDisconnect
-from typing import Annotated, List
+from fastapi import APIRouter, Depends, HTTPException, Query, Body, WebSocket, WebSocketDisconnect
+from typing import Annotated
 from sqlalchemy.orm import Session
 import json
-from pydantic import ValidationError
 
-#from ..utils import authenticate_and_get_user_details
 from ..database.models import get_db
 from ..database.db import get_all_messages, create_message, delete_message_from_db
 
-from ..schemas.message import \
-    MessageListResponse,\
-    CreateMessageRequest,\
-    CreateMessageResponse,\
-    DeleteMessageRequest,\
+from ..schemas.message import (
+    MessageListResponse,
+    CreateMessageRequest,
+    CreateMessageResponse,
+    DeleteMessageRequest,
     DeleteMessageResponse
+)
 
 
 class ConnectionManager:
@@ -60,9 +59,6 @@ async def get_messages(db: Annotated[Session, Depends(get_db)]):
 @router.post('/send-message', response_model=CreateMessageResponse)
 async def send_message(message_request: Annotated[CreateMessageRequest, Body], db: Annotated[Session, Depends(get_db)]):
     try:
-        # user_details = authenticate_and_get_user_details(request_obj)
-        # user_id = user_details.get("user_id")
-
         new_message = create_message(
             db=db,
             content=message_request.content,
