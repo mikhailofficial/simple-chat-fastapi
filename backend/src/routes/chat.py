@@ -45,6 +45,10 @@ router = APIRouter()
 
 @router.get('/messages', response_model=MessageListResponse)
 async def get_messages(db: Annotated[Session, Depends(get_db)]):
+    '''
+    Retrieve all messages from the chat.
+    Returns a list of all messages with their details including id, sender, content, and timestamp.
+    '''
     try:
         messages = get_all_messages(db)
         messages_response = MessageListResponse(
@@ -58,6 +62,11 @@ async def get_messages(db: Annotated[Session, Depends(get_db)]):
 
 @router.post('/send-message', response_model=CreateMessageResponse)
 async def send_message(message_request: Annotated[CreateMessageRequest, Body], db: Annotated[Session, Depends(get_db)]):
+    '''
+    Create and send a new message to the chat.
+    Validates message content and stores it in the database.
+    Returns the ID of the created message.
+    '''
     try:
         new_message = create_message(
             db=db,
@@ -75,6 +84,10 @@ async def send_message(message_request: Annotated[CreateMessageRequest, Body], d
 
 @router.delete('/delete-message', response_model=DeleteMessageResponse)
 async def delete_message(message_request: Annotated[DeleteMessageRequest, Body], db: Annotated[Session, Depends(get_db)]):
+    '''
+    Delete a specific message from the chat by its ID.
+    Returns success status indicating whether the message was deleted.
+    '''
     try:
         success = delete_message_from_db(db, message_request.id)
         return DeleteMessageResponse(success=success)
@@ -84,6 +97,11 @@ async def delete_message(message_request: Annotated[DeleteMessageRequest, Body],
 
 @router.websocket('/ws')
 async def websocket_endpoint(websocket: WebSocket, username: Annotated[str, Query]):
+    '''
+    WebSocket endpoint for real-time chat functionality.
+    Establishes connection for live message broadcasting and user status updates.
+    Requires username as query parameter for user identification.
+    '''
     await manager.connect(websocket, username)
     try:
         while True:

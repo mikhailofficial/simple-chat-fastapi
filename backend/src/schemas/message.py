@@ -1,30 +1,31 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
+from datetime import datetime
 
 
 class MessageBase(BaseModel):
-    id: int
-    content: str
-    created_at: str
-    created_by: str
+    content: str = Field(max_length=100, description="The content of the message", examples=["Hello world!"])
+    created_at: datetime = Field(description="The datetime when the message has been created")
+    created_by: str = Field(description="The sender of the message")
 
 
 class MessageListResponse(BaseModel):
-    messages: list[MessageBase]
+    class MessageListResponseItem(MessageBase):
+        id: int = Field(description="The number in the database")
+
+    messages: list[MessageListResponseItem]
 
 
-class CreateMessageRequest(BaseModel):
-    content: str
-    created_at: str
-    created_by: str
+class CreateMessageRequest(MessageBase):
+    pass
 
 
 class CreateMessageResponse(BaseModel):
-    id: int
+    id: int = Field(description="The number in the database")
 
 
 class DeleteMessageRequest(BaseModel):
-    id: int
+    id: int = Field(description="The number in the database")
 
 
 class DeleteMessageResponse(BaseModel):
-    success: bool
+    success: bool = Field(description="The flag of the successfully deletion action")

@@ -1,5 +1,5 @@
-from sqlalchemy import delete
 from sqlalchemy.orm import Session
+from datetime import datetime
 
 from .models import Message
 
@@ -11,7 +11,7 @@ def get_all_messages(db: Session):
 def create_message(
     db: Session,
     content: str,
-    created_at: str,
+    created_at: datetime,
     created_by: str
 ):
     db_message = Message(

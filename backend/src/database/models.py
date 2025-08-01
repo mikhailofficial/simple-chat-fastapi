@@ -1,11 +1,11 @@
-from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy import Column, Integer, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
 from dotenv import load_dotenv
 import os
 
-from ..schemas.message import MessageBase
+from ..schemas.message import MessageListResponse
 
 
 load_dotenv()
@@ -26,11 +26,11 @@ class Message(Base):
 
     id = Column(Integer, primary_key=True)
     content = Column(String, nullable=False)
-    created_at = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False)
     created_by = Column(String, nullable=False)
 
     def to_pydantic(self):
-        return MessageBase(
+        return MessageListResponse.MessageListResponseItem(
             id=self.id,
             content=self.content,
             created_at=self.created_at,
