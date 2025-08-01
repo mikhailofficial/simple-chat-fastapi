@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, Query, Body, WebSocket, WebSocketDisconnect
-from fastapi_throttle import RateLimiter
 from typing import Annotated
-from sqlalchemy.orm import Session
 import json
+
+from fastapi import APIRouter, Depends, HTTPException, Query, Body, WebSocket, WebSocketDisconnect, Response
+from fastapi_throttle import RateLimiter
+from sqlalchemy.orm import Session
+from secure import Secure
 
 from ..database.models import get_db
 from ..database.db import get_all_messages, create_message, delete_message_from_db
@@ -42,16 +44,18 @@ manager = ConnectionManager()
 
 
 router = APIRouter()
+secure_headers = Secure.with_default_headers()
 
 limiter = RateLimiter(times=100, seconds=60)
 
 
 @router.get('/messages', response_model=MessageListResponse, dependencies=[Depends(limiter)])
-async def get_messages(db: Annotated[Session, Depends(get_db)]):
+async def get_messages(response: Response, db: Annotated[Session, Depends(get_db)]):
     '''
     Retrieve all messages from the chat.
     Returns a list of all messages with their details including id, sender, content, and timestamp.
     '''
+    secure_headers.set_headers(response)
     try:
         messages = get_all_messages(db)
         messages_response = MessageListResponse(
@@ -64,12 +68,17 @@ async def get_messages(db: Annotated[Session, Depends(get_db)]):
 
 
 @router.post('/send-message', response_model=CreateMessageResponse, dependencies=[Depends(limiter)])
-async def send_message(message_request: Annotated[CreateMessageRequest, Body], db: Annotated[Session, Depends(get_db)]):
+async def send_message(
+    response: Response,
+    message_request: Annotated[CreateMessageRequest, Body],
+    db: Annotated[Session, Depends(get_db)]
+):
     '''
     Create and send a new message to the chat.
     Validates message content and stores it in the database.
     Returns the ID of the created message.
     '''
+    secure_headers.set_headers(response)
     try:
         new_message = create_message(
             db=db,
@@ -86,11 +95,16 @@ async def send_message(message_request: Annotated[CreateMessageRequest, Body], d
 
 
 @router.delete('/delete-message', response_model=DeleteMessageResponse, dependencies=[Depends(limiter)])
-async def delete_message(message_request: Annotated[DeleteMessageRequest, Body], db: Annotated[Session, Depends(get_db)]):
+async def delete_message(
+    response: Response,
+    message_request: Annotated[DeleteMessageRequest, Body],
+    db: Annotated[Session, Depends(get_db)]
+):
     '''
     Delete a specific message from the chat by its ID.
     Returns success status indicating whether the message was deleted.
     '''
+    secure_headers.set_headers(response)
     try:
         success = delete_message_from_db(db, message_request.id)
         return DeleteMessageResponse(success=success)
@@ -99,12 +113,13 @@ async def delete_message(message_request: Annotated[DeleteMessageRequest, Body],
 
 
 @router.websocket('/ws')
-async def websocket_endpoint(websocket: WebSocket, username: Annotated[str, Query]):
+async def websocket_endpoint(response: Response, websocket: WebSocket, username: Annotated[str, Query]):
     '''
     WebSocket endpoint for real-time chat functionality.
     Establishes connection for live message broadcasting and user status updates.
     Requires username as query parameter for user identification.
     '''
+    secure_headers.set_headers(response)
     await manager.connect(websocket, username)
     try:
         while True:
