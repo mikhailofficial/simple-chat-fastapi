@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import styles from './Message.module.css'
 
-export default function Message({ text, sender, timestamp, onDelete, messageId }) {
+export default function Message({ user, text, sender, timestamp, onDelete, messageId }) {
     const [isHovered, setIsHovered] = useState(false);
 
     const handleDelete = (e) => {
@@ -37,7 +37,7 @@ export default function Message({ text, sender, timestamp, onDelete, messageId }
             onMouseLeave={() => setIsHovered(false)}    
             style={{ position: 'relative' }}
         >
-            {isHovered && (
+            {isHovered && (user === sender) && (
                 <button
                     className={styles.deleteButton}
                     onClick={handleDelete}

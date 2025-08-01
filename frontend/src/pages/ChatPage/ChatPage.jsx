@@ -178,6 +178,7 @@ export function Chat() {
             <div className={styles['chat-container']}>
                 <ChatMessages 
                     messages={messages}
+                    user={user.username}
                     messagesEndRef={messagesEndRef}
                     onDeleteMessage={handleDeleteMessage}
                 />
