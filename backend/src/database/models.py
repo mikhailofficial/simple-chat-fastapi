@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String, create_engine
+from sqlalchemy import Column, Integer, String, DateTime, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
@@ -26,7 +26,7 @@ class Message(Base):
 
     id = Column(Integer, primary_key=True)
     content = Column(String, nullable=False)
-    created_at = Column(String, nullable=False)
+    created_at = Column(DateTime, nullable=False)
     created_by = Column(String, nullable=False)
 
     def to_pydantic(self):

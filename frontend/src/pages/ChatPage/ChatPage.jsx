@@ -118,7 +118,7 @@ export function Chat() {
     const handleSendMessage = async () => {
         if (!inputValue.trim()) return;
 
-        const timestamp = new Date().toLocaleString();
+        const timestamp = new Date();
 
         try {
             const response = await makeRequest("send-message", {
