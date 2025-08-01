@@ -1,4 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, WebSocket, WebSocketDisconnect
+from fastapi_throttle import RateLimiter
 from typing import Annotated
 from sqlalchemy.orm import Session
 import json
@@ -42,8 +43,10 @@ manager = ConnectionManager()
 
 router = APIRouter()
 
+limiter = RateLimiter(times=100, seconds=60)
 
-@router.get('/messages', response_model=MessageListResponse)
+
+@router.get('/messages', response_model=MessageListResponse, dependencies=[Depends(limiter)])
 async def get_messages(db: Annotated[Session, Depends(get_db)]):
     '''
     Retrieve all messages from the chat.
@@ -60,7 +63,7 @@ async def get_messages(db: Annotated[Session, Depends(get_db)]):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post('/send-message', response_model=CreateMessageResponse)
+@router.post('/send-message', response_model=CreateMessageResponse, dependencies=[Depends(limiter)])
 async def send_message(message_request: Annotated[CreateMessageRequest, Body], db: Annotated[Session, Depends(get_db)]):
     '''
     Create and send a new message to the chat.
@@ -82,7 +85,7 @@ async def send_message(message_request: Annotated[CreateMessageRequest, Body], d
         raise HTTPException(status_code=400, detail=str(e))
 
 
-@router.delete('/delete-message', response_model=DeleteMessageResponse)
+@router.delete('/delete-message', response_model=DeleteMessageResponse, dependencies=[Depends(limiter)])
 async def delete_message(message_request: Annotated[DeleteMessageRequest, Body], db: Annotated[Session, Depends(get_db)]):
     '''
     Delete a specific message from the chat by its ID.
