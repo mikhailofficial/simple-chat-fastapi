@@ -1,7 +1,41 @@
 from sqlalchemy.orm import Session
 from datetime import datetime
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from dotenv import load_dotenv
+import os
 
-from .models import Message
+from .models import Message, Base
+
+load_dotenv()
+
+DB_USER = os.getenv("DB_USER")
+DB_PASSWORD = os.getenv("DB_PASSWORD")
+DB_HOST = os.getenv("DB_HOST")
+DB_PORT = os.getenv("DB_PORT")
+DB_NAME = os.getenv("DB_NAME")
+DATABASE_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+
+engine = create_engine(
+    url=DATABASE_URL, 
+    echo=True, 
+    echo_pool=True,
+    pool_size=20, 
+    max_overflow=0, 
+    pool_recycle=3600, 
+    pool_pre_ping=True
+)
+
+Base.metadata.create_all(engine)
+
+SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
+
+def get_db():
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 def get_all_messages(db: Session):
