@@ -6,8 +6,7 @@ from fastapi_throttle import RateLimiter
 from sqlalchemy.orm import Session
 from secure import Secure
 
-from ..database.models import get_db
-from ..database.db import get_all_messages, create_message, delete_message_from_db
+from ..database.db import get_db, get_all_messages, create_message, delete_message_from_db
 
 from ..schemas.message import (
     MessageListResponse,
