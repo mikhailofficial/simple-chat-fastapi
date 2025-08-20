@@ -3,7 +3,7 @@ import json
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, WebSocket, WebSocketDisconnect, Response
 from fastapi_throttle import RateLimiter
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio.session import AsyncSession
 from secure import Secure
 
 from ..database.db import get_db, get_all_messages, create_message, delete_message_from_db
@@ -43,20 +43,21 @@ manager = ConnectionManager()
 
 
 router = APIRouter()
+
 secure_headers = Secure.with_default_headers()
 
 limiter = RateLimiter(times=100, seconds=60)
 
 
 @router.get('/messages', response_model=MessageListResponse, dependencies=[Depends(limiter)])
-async def get_messages(response: Response, db: Annotated[Session, Depends(get_db)]):
+async def get_messages(response: Response, session: Annotated[AsyncSession, Depends(get_db)]):
     '''
     Retrieve all messages from the chat.
     Returns a list of all messages with their details including id, sender, content, and timestamp.
     '''
     secure_headers.set_headers(response)
     try:
-        messages = get_all_messages(db)
+        messages = await get_all_messages(session)
         messages_response = MessageListResponse(
             messages=[message.to_pydantic() for message in messages]
         )
@@ -70,7 +71,7 @@ async def get_messages(response: Response, db: Annotated[Session, Depends(get_db
 async def send_message(
     response: Response,
     message_request: Annotated[CreateMessageRequest, Body],
-    db: Annotated[Session, Depends(get_db)]
+    session: Annotated[AsyncSession, Depends(get_db)]
 ):
     '''
     Create and send a new message to the chat.
@@ -79,8 +80,8 @@ async def send_message(
     '''
     secure_headers.set_headers(response)
     try:
-        new_message = create_message(
-            db=db,
+        new_message = await create_message(
+            session=session,
             content=message_request.content,
             created_at=message_request.created_at,
             created_by=message_request.created_by,
@@ -97,7 +98,7 @@ async def send_message(
 async def delete_message(
     response: Response,
     message_request: Annotated[DeleteMessageRequest, Body],
-    db: Annotated[Session, Depends(get_db)]
+    session: Annotated[AsyncSession, Depends(get_db)]
 ):
     '''
     Delete a specific message from the chat by its ID.
@@ -105,7 +106,7 @@ async def delete_message(
     '''
     secure_headers.set_headers(response)
     try:
-        success = delete_message_from_db(db, message_request.id)
+        success = await delete_message_from_db(session, message_request.id)
         return DeleteMessageResponse(success=success)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))

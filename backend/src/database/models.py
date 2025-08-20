@@ -1,9 +1,12 @@
-from sqlalchemy import Column, Integer, String, DateTime
-from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy import Column, Integer, String
+from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy.types import TIMESTAMP
 
 from ..schemas.message import MessageListResponse
 
-Base = declarative_base()
+
+class Base(DeclarativeBase):
+    pass
 
 
 class Message(Base):
@@ -11,8 +14,9 @@ class Message(Base):
 
     id = Column(Integer, primary_key=True)
     content = Column(String, nullable=False)
-    created_at = Column(DateTime, nullable=False)
+    created_at = Column(type_=TIMESTAMP(timezone=True), nullable=False)
     created_by = Column(String, nullable=False)
+
 
     def to_pydantic(self):
         return MessageListResponse.MessageListResponseItem(

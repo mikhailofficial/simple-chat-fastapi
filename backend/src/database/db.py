@@ -1,9 +1,11 @@
-from sqlalchemy.orm import Session
-from datetime import datetime
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
-from dotenv import load_dotenv
 import os
+import asyncio
+from dotenv import load_dotenv
+from datetime import datetime
+
+from sqlalchemy import select
+from sqlalchemy.ext.asyncio.engine import create_async_engine
+from sqlalchemy.ext.asyncio.session import async_sessionmaker, AsyncSession
 
 from .models import Message, Base
 
@@ -14,9 +16,9 @@ DB_PASSWORD = os.getenv("DB_PASSWORD")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = os.getenv("DB_PORT")
 DB_NAME = os.getenv("DB_NAME")
-DATABASE_URL = f'postgresql://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
 
-engine = create_engine(
+engine = create_async_engine(
     url=DATABASE_URL, 
     echo=True, 
     echo_pool=True,
@@ -26,24 +28,29 @@ engine = create_engine(
     pool_pre_ping=True
 )
 
-Base.metadata.create_all(engine)
+SessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
-
-
-def get_all_messages(db: Session):
-    return db.query(Message).all()
+async def get_db():
+    async with engine.begin() as conn:
+        await conn.run_sync(Base.metadata.create_all)
+    async with SessionLocal() as session:
+        try:
+            yield session
+        except Exception as e:
+            print(str(e))
+        finally:
+            await session.close()
 
 
-def create_message(
-    db: Session,
+async def get_all_messages(session: AsyncSession):
+    stmt = select(Message)
+    result = await session.execute(stmt)
+    messages = result.scalars().all()
+    return messages
+
+
+async def create_message(
+    session: AsyncSession,
     content: str,
     created_at: datetime,
     created_by: str
@@ -54,18 +61,18 @@ def create_message(
         created_by=created_by
     )
     
-    db.add(db_message)
-    db.commit()
-    db.refresh(db_message)
+    session.add(db_message)
+    await session.commit()
+    await session.refresh(db_message)
 
     return db_message
 
 
-def delete_message_from_db(db: Session, id: str):
-    message = db.query(Message).filter_by(id=id).first()
-    
+async def delete_message_from_db(session: AsyncSession, id: str):
+    message = await session.execute(select(Message).filter_by(id=id))
+
     if message:
-        db.delete(message)
-        db.commit()
+        session.delete(message)
+        await session.commit()
         return True
     return False
