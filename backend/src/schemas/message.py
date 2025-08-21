@@ -29,3 +29,12 @@ class DeleteMessageRequest(BaseModel):
 
 class DeleteMessageResponse(BaseModel):
     success: bool = Field(description="The flag of the successfully deletion action")
+
+
+class UpdateMessageRequest(BaseModel):
+    id: int = Field(description="The number in the database")
+    content: str = Field(max_length=100, description="The content of the message", examples=["Hello world!"])
+
+
+class UpdateMessageResponse(BaseModel):
+    success: bool = Field(description="The flag of the successfully update action")

@@ -6,14 +6,22 @@ from fastapi_throttle import RateLimiter
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from secure import Secure
 
-from ..database.db import get_db, get_all_messages, create_message, delete_message_from_db
+from ..database.db import (
+    get_db,
+    get_all_messages, 
+    create_message, 
+    delete_message_from_db, 
+    update_message_from_db
+)
 
 from ..schemas.message import (
     MessageListResponse,
     CreateMessageRequest,
     CreateMessageResponse,
     DeleteMessageRequest,
-    DeleteMessageResponse
+    DeleteMessageResponse,
+    UpdateMessageRequest,
+    UpdateMessageResponse
 )
 
 
@@ -108,6 +116,24 @@ async def delete_message(
     try:
         success = await delete_message_from_db(session, message_request.id)
         return DeleteMessageResponse(success=success)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.patch('/update-message', response_model=UpdateMessageResponse, dependencies=[Depends(limiter)])
+async def update_message(
+    response: Response,
+    message_request: Annotated[UpdateMessageRequest, Body],
+    session: Annotated[AsyncSession, Depends(get_db)]
+):
+    '''
+    Update content field of a specific message from the chat by its ID
+    Returns success status indicating whether the message was updated.
+    '''
+    secure_headers.set_headers(response)
+    try:
+        success = await update_message_from_db(session, message_request.id, message_request.content)
+        return UpdateMessageResponse(success=success)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
 

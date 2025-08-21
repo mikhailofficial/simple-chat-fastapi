@@ -1,5 +1,4 @@
 import os
-import asyncio
 from dotenv import load_dotenv
 from datetime import datetime
 
@@ -28,7 +27,7 @@ engine = create_async_engine(
     pool_pre_ping=True
 )
 
-SessionLocal = async_sessionmaker(autocommit=False, autoflush=False, bind=engine)
+SessionLocal = async_sessionmaker(bind=engine, autocommit=False, autoflush=False)
 
 async def get_db():
     async with engine.begin() as conn:
@@ -43,7 +42,7 @@ async def get_db():
 
 
 async def get_all_messages(session: AsyncSession):
-    stmt = select(Message)
+    stmt = select(Message).order_by(Message.id)
     result = await session.execute(stmt)
     messages = result.scalars().all()
     return messages
@@ -68,11 +67,25 @@ async def create_message(
     return db_message
 
 
-async def delete_message_from_db(session: AsyncSession, id: str):
-    message = await session.execute(select(Message).filter_by(id=id))
+async def delete_message_from_db(session: AsyncSession, id: int):
+    stmt = select(Message).filter_by(id=id)
+    result = await session.execute(stmt)
+    message = result.scalar_one()
 
     if message:
-        session.delete(message)
+        await session.delete(message)
+        await session.commit()
+        return True
+    return False
+
+
+async def update_message_from_db(session: AsyncSession, id: int, content: str):
+    stmt = select(Message).filter_by(id=id)
+    result = await session.execute(stmt)
+    message = result.scalar_one()
+
+    if message:
+        message.content = content
         await session.commit()
         return True
     return False
