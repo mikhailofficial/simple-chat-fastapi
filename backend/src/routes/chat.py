@@ -5,12 +5,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, Body, WebSocket, W
 from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from secure import Secure
+from fastapi.encoders import jsonable_encoder
 
 from ..database.db import (
     get_db,
-    get_all_messages, 
-    create_message, 
-    delete_message_from_db, 
+    get_all_messages,
+    create_message,
+    delete_message_from_db,
     update_message_from_db
 )
 
@@ -24,6 +25,10 @@ from ..schemas.message import (
     UpdateMessageResponse
 )
 
+from ..core.redis_client import redis_connection
+
+
+CACHE_KEY_MESSAGES = "chat:messages"
 
 class ConnectionManager:
     def __init__(self):
@@ -37,7 +42,7 @@ class ConnectionManager:
     async def disconnect(self, websocket: WebSocket):
         del self.activate_connections[websocket]
         await self.broadcast_userlist()
-    
+
     async def broadcast(self, message: str):
         for connection in self.activate_connections:
             await connection.send_text(message)
@@ -46,6 +51,7 @@ class ConnectionManager:
         for connection in self.activate_connections:
             message = json.dumps({"userlist": list(self.activate_connections.values())})
             await connection.send_text(message)
+
 
 manager = ConnectionManager()
 
@@ -64,12 +70,26 @@ async def get_messages(response: Response, session: Annotated[AsyncSession, Depe
     Returns a list of all messages with their details including id, sender, content, and timestamp.
     '''
     secure_headers.set_headers(response)
+
+    cached_messages_json = await redis_connection.get(CACHE_KEY_MESSAGES)
+    if cached_messages_json:
+        cached_payload = json.loads(cached_messages_json)
+        response.headers["X-Cache"] = "HIT"
+        return MessageListResponse(**cached_payload)
+
     try:
         messages = await get_all_messages(session)
         messages_response = MessageListResponse(
             messages=[message.to_pydantic() for message in messages]
         )
 
+        serialized = (
+            messages_response.model_dump_json() if hasattr(messages_response, 'model_dump_json')
+            else json.dumps(jsonable_encoder(messages_response))
+        )
+        await redis_connection.set(CACHE_KEY_MESSAGES, serialized, ex=3600)
+
+        response.headers["X-Cache"] = "MISS"
         return messages_response
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -95,6 +115,8 @@ async def send_message(
             created_by=message_request.created_by,
         )
 
+        await redis_connection.delete(CACHE_KEY_MESSAGES)
+
         message_response = CreateMessageResponse(id=new_message.id)
 
         return message_response
@@ -115,6 +137,9 @@ async def delete_message(
     secure_headers.set_headers(response)
     try:
         success = await delete_message_from_db(session, message_request.id)
+
+        await redis_connection.delete(CACHE_KEY_MESSAGES)
+
         return DeleteMessageResponse(success=success)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
@@ -133,6 +158,9 @@ async def update_message(
     secure_headers.set_headers(response)
     try:
         success = await update_message_from_db(session, message_request.id, message_request.content)
+
+        await redis_connection.delete(CACHE_KEY_MESSAGES)
+
         return UpdateMessageResponse(success=success)
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
