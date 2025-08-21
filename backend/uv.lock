@@ -48,9 +48,10 @@ dependencies = [
     { name = "asyncpg" },
     { name = "clerk-backend-api" },
     { name = "fastapi" },
-    { name = "fastapi-throttle" },
+    { name = "fastapi-limiter" },
     { name = "greenlet" },
     { name = "python-dotenv" },
+    { name = "redis" },
     { name = "secure" },
     { name = "sqlalchemy", extra = ["asyncio"] },
     { name = "uvicorn" },
@@ -62,9 +63,10 @@ requires-dist = [
     { name = "asyncpg", specifier = ">=0.30.0" },
     { name = "clerk-backend-api", specifier = ">=3.0.5" },
     { name = "fastapi", specifier = ">=0.116.1" },
-    { name = "fastapi-throttle", specifier = ">=0.1.6" },
+    { name = "fastapi-limiter", specifier = ">=0.1.6" },
     { name = "greenlet", specifier = ">=3.2.4" },
     { name = "python-dotenv", specifier = ">=1.1.1" },
+    { name = "redis", specifier = ">=6.4.0" },
     { name = "secure", specifier = ">=1.0.1" },
     { name = "sqlalchemy", extras = ["asyncio"], specifier = ">=2.0.43" },
     { name = "uvicorn", specifier = ">=0.35.0" },
@@ -189,15 +191,16 @@ wheels = [
 ]
 
 [[package]]
-name = "fastapi-throttle"
+name = "fastapi-limiter"
 version = "0.1.6"
 source = { registry = "https://pypi.org/simple" }
 dependencies = [
     { name = "fastapi" },
+    { name = "redis" },
 ]
-sdist = { url = "https://files.pythonhosted.org/packages/29/a5/799392d420303d4b012f01ddb76dc74e2ec650c466e5d6405faf3e27a547/fastapi_throttle-0.1.6.tar.gz", hash = "sha256:baf35c9adcb623b43d21724f4b84fe25b76b49987898a14a6652279a6eebbdd6", size = 5647, upload-time = "2025-06-14T18:27:35.914Z" }
+sdist = { url = "https://files.pythonhosted.org/packages/7f/99/c7903234488d4dca5f9bccb4f88c2f582a234f0dca33348781c9cf8a48c6/fastapi_limiter-0.1.6.tar.gz", hash = "sha256:6f5fde8efebe12eb33861bdffb91009f699369a3c2862cdc7c1d9acf912ff443", size = 8307, upload-time = "2024-01-05T09:14:48.628Z" }
 wheels = [
-    { url = "https://files.pythonhosted.org/packages/28/9b/3d6ea3a5d407e060e4a10e34929d5cb7e9c65d742b0cd0cdae690f7828e0/fastapi_throttle-0.1.6-py3-none-any.whl", hash = "sha256:a3fd6fe81a9e0d24a5e5eb0ad92a54e562e6b1a3a46388ca447f8e962b6add68", size = 6523, upload-time = "2025-06-14T18:27:34.885Z" },
+    { url = "https://files.pythonhosted.org/packages/cd/b5/6f6b4d18bee1cafc857eae12738b3a03b7d1102b833668be868938c57b9d/fastapi_limiter-0.1.6-py3-none-any.whl", hash = "sha256:2e53179a4208b8f2c8795e38bb001324d3dc37d2800ff49fd28ec5caabf7a240", size = 15829, upload-time = "2024-01-05T09:14:47.613Z" },
 ]
 
 [[package]]
@@ -338,6 +341,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f6/b0/4bc07ccd3572a2f9df7e6782f52b0c6c90dcbb803ac4a167702d7d0dfe1e/python_dotenv-1.1.1.tar.gz", hash = "sha256:a8a6399716257f45be6a007360200409fce5cda2661e3dec71d23dc15f6189ab", size = 41978, upload-time = "2025-06-24T04:21:07.341Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/5f/ed/539768cf28c661b5b068d66d96a2f155c4971a5d55684a514c1a0e0dec2f/python_dotenv-1.1.1-py3-none-any.whl", hash = "sha256:31f23644fe2602f88ff55e1f5c79ba497e01224ee7737937930c448e4d0e24dc", size = 20556, upload-time = "2025-06-24T04:21:06.073Z" },
+]
+
+[[package]]
+name = "redis"
+version = "6.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0d/d6/e8b92798a5bd67d659d51a18170e91c16ac3b59738d91894651ee255ed49/redis-6.4.0.tar.gz", hash = "sha256:b01bc7282b8444e28ec36b261df5375183bb47a07eb9c603f284e89cbc5ef010", size = 4647399, upload-time = "2025-08-07T08:10:11.441Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e8/02/89e2ed7e85db6c93dfa9e8f691c5087df4e3551ab39081a4d7c6d1f90e05/redis-6.4.0-py3-none-any.whl", hash = "sha256:f0544fa9604264e9464cdf4814e7d4830f74b165d52f2a330a760a88dd248b7f", size = 279847, upload-time = "2025-08-07T08:10:09.84Z" },
 ]
 
 [[package]]

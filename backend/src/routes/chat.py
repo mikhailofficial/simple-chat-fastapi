@@ -2,7 +2,7 @@ from typing import Annotated
 import json
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, WebSocket, WebSocketDisconnect, Response
-from fastapi_throttle import RateLimiter
+from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from secure import Secure
 
