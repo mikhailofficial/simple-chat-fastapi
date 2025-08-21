@@ -177,6 +177,30 @@ export function Chat() {
 		}
 	};
 
+	const handleUpdateMessage = async (messageId, newContent) => {
+		if(!messageId) {
+			console.log("Cannot update message without ID");
+			return;
+		}
+
+		try {
+			await makeRequest("update-message", {
+				method: "PATCH",
+				body: JSON.stringify({
+					"id": messageId,
+					"content": newContent
+				}),
+			});
+			setMessages(prev => prev.map(message => 
+				message.id === messageId 
+					? { ...message, text: newContent }
+					: message
+			));
+		} catch(err) {
+			console.error("Failed to update message:", err);
+		}
+	};
+
 	return (
 		<div className={styles['chat-main-layout']}>
 			<div className={styles['chat-container']}>
@@ -185,6 +209,7 @@ export function Chat() {
 					user={user.username}
 					messagesEndRef={messagesEndRef}
 					onDeleteMessage={handleDeleteMessage}
+					onUpdateMessage={handleUpdateMessage}
 				/>
 				<ChatInput
 					inputValue={inputValue}

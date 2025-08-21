@@ -61,10 +61,42 @@
   color: #888;
 }
 
-.deleteButton {
+.actionButtons {
   position: absolute;
   top: 50px;
   right: 12px;
+  display: flex;
+  gap: 4px;
+  z-index: 10;
+}
+
+.updateButton {
+  background: #3b82f6;
+  border: none;
+  border-radius: 35%;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 10px;
+  color: white;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  padding: 0;
+  line-height: 1;
+  min-width: 20px;
+  min-height: 20px;
+}
+
+.updateButton:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.deleteButton {
   background: #ef4444;
   border: none;
   border-radius: 35%;
@@ -78,7 +110,6 @@
   font-weight: bold;
   color: white;
   transition: all 0.2s ease;
-  z-index: 10;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
   padding: 0;
   line-height: 1;
@@ -89,6 +120,72 @@
 .deleteButton:hover {
   background: #dc2626;
   transform: scale(1.1);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.editContainer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.editInput {
+  width: 100%;
+  padding: 8px 12px;
+  border: 2px solid #3b82f6;
+  border-radius: 8px;
+  font-size: 14px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.editInput:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.editButtons {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+}
+
+.saveButton {
+  background: #10b981;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.saveButton:hover {
+  background: #059669;
+  transform: scale(1.05);
+  box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+}
+
+.cancelButton {
+  background: #6b7280;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  cursor: pointer;
+  font-size: 12px;
+  font-weight: bold;
+  color: white;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.cancelButton:hover {
+  background: #4b5563;
+  transform: scale(1.05);
   box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
 }
 

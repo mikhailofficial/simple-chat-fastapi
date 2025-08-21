@@ -1,7 +1,7 @@
 import Message from '../../components/Message/Message.jsx'
 import styles from './ChatPage.module.css'
 
-export default function ChatMessages({ messages, user, messagesEndRef, onDeleteMessage }) {
+export default function ChatMessages({ messages, user, messagesEndRef, onDeleteMessage, onUpdateMessage }) {
     return (
         <div className={styles['messages']}>
             {messages.map((msg, index) => (
@@ -13,6 +13,7 @@ export default function ChatMessages({ messages, user, messagesEndRef, onDeleteM
                     timestamp={msg.timestamp} 
                     messageId={msg.id}
                     onDelete={onDeleteMessage}
+                    onUpdate={onUpdateMessage}
                 />
             ))}
             <div ref={messagesEndRef} />
