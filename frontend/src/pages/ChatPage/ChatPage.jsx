@@ -9,7 +9,7 @@ import styles from './ChatPage.module.css'
 
 import ChatMessages from './ChatMessages.jsx'
 import ChatInput from './ChatInput.jsx'
-import ChatSidebar from './ChatSideBar.jsx'
+import ChatSidebar from './ChatSidebar.jsx'
 
 import {parseTimestamp, shouldShowDateHeader} from '../../utils/dateUtils.js'
 
