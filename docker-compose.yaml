@@ -1,0 +1,52 @@
+services:
+  server:
+    image: backend
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - database
+      - redis
+    networks:
+      - app-network
+    
+  client:
+    image: frontend
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+    networks:
+      - app-network
+    
+  database:
+    image: postgres:17.5-alpine3.22
+    container_name: postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - app-network
+  
+  redis:
+    image: redis:8.2.1-alpine3.22
+    container_name: redis
+    ports:
+      - "6379:6379"
+    networks:
+      - app-network
+  
+volumes:
+  postgres_data:
+
+networks:
+  app-network:
+    driver: bridge

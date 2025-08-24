@@ -11,9 +11,6 @@ RUN npm install
 # Copy source code
 COPY . .
 
-# Build the application with environment variable
-ARG VITE_CLERK_PUBLISHABLE_KEY
-ENV VITE_CLERK_PUBLISHABLE_KEY=$VITE_CLERK_PUBLISHABLE_KEY
 RUN npm run build
 
 # Production stage
