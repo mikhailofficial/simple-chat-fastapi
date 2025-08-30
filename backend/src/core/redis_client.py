@@ -2,7 +2,7 @@ import redis.asyncio as redis
 import os
 
 
-redis_host = os.getenv("REDIS_HOST", "host.docker.internal")
+redis_host = os.getenv("REDIS_HOST", "redis")
 redis_port = os.getenv("REDIS_PORT", "6379")
 redis_url = f"redis://{redis_host}:{redis_port}"
 
