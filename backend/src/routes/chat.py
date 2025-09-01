@@ -2,12 +2,15 @@ from typing import Annotated
 import json
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, WebSocket, WebSocketDisconnect, Response
+from fastapi.security import OAuth2PasswordRequestForm
 from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.ext.asyncio.session import AsyncSession
 from secure import Secure
 from fastapi.encoders import jsonable_encoder
 
 from ..database.db import (
+    authenticate_user,
+    create_user,
     get_db,
     get_all_messages,
     create_message,
@@ -24,8 +27,13 @@ from ..schemas.message import (
     UpdateMessageRequest,
     UpdateMessageResponse
 )
+from ..schemas.user import Token
 
 from ..core.redis_client import redis_connection
+
+from ..utils import credentials_exception, create_access_token
+
+from ..dependencies import get_current_user
 
 
 CACHE_KEY_MESSAGES = "chat:messages"
@@ -63,8 +71,38 @@ secure_headers = Secure.with_default_headers()
 limiter = RateLimiter(times=100, seconds=60)
 
 
+@router.post('/token', response_model=Token, dependencies=[Depends(limiter)])
+async def login_for_access_token(
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    session: Annotated[AsyncSession, Depends(get_db)]
+):
+    print(f"{form_data.username} - {form_data.password}")
+    user = await authenticate_user(session, form_data.username, form_data.password)
+    if not user:
+        raise credentials_exception
+    access_token = create_access_token({"sub": user.username})
+    return {
+        "access_token": access_token,
+        "token_type": "bearer"
+    }
+
+
+@router.post('/sign-up', dependencies=[Depends(limiter)])
+async def sign_up(
+    session: Annotated[AsyncSession, Depends(get_db)],
+    username: str,
+    password: str
+):
+    user = await create_user(session, username, password)
+    return user
+
+
 @router.get('/messages', response_model=MessageListResponse, dependencies=[Depends(limiter)])
-async def get_messages(response: Response, session: Annotated[AsyncSession, Depends(get_db)]):
+async def get_messages(
+    user: Annotated[get_current_user, Depends()],
+    response: Response, 
+    session: Annotated[AsyncSession, Depends(get_db)]
+):
     '''
     Retrieve all messages from the chat.
     Returns a list of all messages with their details including id, sender, content, and timestamp.

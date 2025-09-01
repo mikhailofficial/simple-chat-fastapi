@@ -1,18 +1,14 @@
 from sqlalchemy import Column, Integer, String
-from sqlalchemy.orm import DeclarativeBase
 from sqlalchemy.types import TIMESTAMP
 
-from ..schemas.message import MessageListResponse
-
-
-class Base(DeclarativeBase):
-    pass
+from .base import Base
+from ...schemas.message import MessageListResponse
 
 
 class Message(Base):
     __tablename__ = 'messages'
 
-    id = Column(Integer, primary_key=True)
+    id = Column(Integer, primary_key=True, index=True)
     content = Column(String, nullable=False)
     created_at = Column(type_=TIMESTAMP(timezone=True), nullable=False)
     created_by = Column(String, nullable=False)

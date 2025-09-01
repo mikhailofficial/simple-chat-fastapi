@@ -1,12 +1,19 @@
 import os
 from dotenv import load_dotenv
 from datetime import datetime
+from passlib.context import CryptContext
 
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio.engine import create_async_engine
 from sqlalchemy.ext.asyncio.session import async_sessionmaker, AsyncSession
 
-from .models import Message, Base
+from .models.base import Base
+from .models.message import Message
+from .models.user import User
+
+
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
 
 load_dotenv()
 
@@ -89,3 +96,35 @@ async def update_message_from_db(session: AsyncSession, id: int, content: str):
         await session.commit()
         return True
     return False
+
+
+def get_password_hash(password: str):
+    return pwd_context.hash(password)
+
+
+def verify_password(plain_password: str, hashed_password: str):
+    return pwd_context.verify(plain_password, hashed_password)
+
+
+async def get_by_username(session: AsyncSession, username: str):
+    stmt = select(User).filter_by(username=username)
+    result = await session.execute(stmt)
+    user = result.scalars().first()
+    return user
+
+
+async def authenticate_user(session: AsyncSession, username: str, password: str):
+    user = await get_by_username(session, username)
+    if not user or not verify_password(password, user.hashed_password):
+        return False
+    return user 
+
+
+async def create_user(session: AsyncSession, username: str, password: str):
+    hashed_password = get_password_hash(password)
+    user = User(username=username, hashed_password=hashed_password)
+    session.add(user)
+    await session.commit()
+    await session.refresh(user)
+
+    return user

@@ -6,11 +6,16 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "asyncpg>=0.30.0",
+    "bcrypt==4.0.1",
     "clerk-backend-api>=3.0.5",
     "fastapi>=0.116.1",
     "fastapi-limiter>=0.1.6",
     "greenlet>=3.2.4",
+    "passlib[bcrypt]>=1.7.4",
+    "pydantic-settings>=2.10.1",
+    "pyjwt[crypto]>=2.10.1",
     "python-dotenv>=1.1.1",
+    "python-multipart>=0.0.20",
     "redis>=6.4.0",
     "secure>=1.0.1",
     "sqlalchemy[asyncio]>=2.0.43",

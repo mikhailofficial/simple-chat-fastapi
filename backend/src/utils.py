@@ -1,30 +1,36 @@
-from fastapi import HTTPException
-from clerk_backend_api import Clerk, AuthenticateRequestOptions
-import os
-from dotenv import load_dotenv
+from typing import Annotated
+from datetime import datetime, timedelta, timezone
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
+import jwt
+from jwt.exceptions import InvalidTokenError
+
+from .schemas.config import settings
 
 
-load_dotenv()
+SECRET_KEY = settings.SECRET_KEY
+ALGORITHM = settings.ALGORITHM
+ACCESS_TOKEN_EXPIRE_MINUTES = settings.ACCESS_TOKEN_EXPIRE_MINUTES
+
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/token")
+
+credentials_exception = HTTPException(
+    status_code=status.HTTP_401_UNAUTHORIZED,
+    detail="Could not validate credentials",
+    headers={"WWW-Authenticate": "Bearer"}
+)
 
 
-clerk_sdk = Clerk(bearer_auth=os.getenv("CLERK_SECRET_KEY"))
+def create_access_token(data: dict):
+    to_encode = data.copy()
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
+    to_encode.update({"exp": expire})
+    return jwt.encode(to_encode, SECRET_KEY, ALGORITHM)
 
 
-def authenticate_and_get_user_details(request):
+def verify_token(token: Annotated[str, Depends(oauth2_scheme)]):
     try:
-        request_state = clerk_sdk.authenticate_request(
-            request,
-            AuthenticateRequestOptions(
-                authorized_parties=["http://localhost:5173", "http://localhost:5174"],
-                jwt_key=os.getenv("JWT_KEY")
-            )
-        )
-
-        if not request_state.is_signed_in:
-            raise HTTPException(status_code=401, detail="Invalid token")
-
-        user_id = request_state.payload.get("sub")
-
-        return {"user_id": user_id}
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        payload = jwt.decode(token, SECRET_KEY, [ALGORITHM])
+        return payload
+    except InvalidTokenError:
+        raise credentials_exception
