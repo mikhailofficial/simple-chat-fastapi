@@ -27,7 +27,11 @@ from ..schemas.message import (
     UpdateMessageRequest,
     UpdateMessageResponse
 )
-from ..schemas.user import Token
+from ..schemas.user import (
+    TokenResponse,
+    UserRequest,
+    UserResponse
+)
 
 from ..core.redis_client import redis_connection
 
@@ -71,12 +75,17 @@ secure_headers = Secure.with_default_headers()
 limiter = RateLimiter(times=100, seconds=60)
 
 
-@router.post('/token', response_model=Token, dependencies=[Depends(limiter)])
+@router.post('/token', response_model=TokenResponse, dependencies=[Depends(limiter)])
 async def login_for_access_token(
+    response: Response,
     form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
     session: Annotated[AsyncSession, Depends(get_db)]
 ):
-    print(f"{form_data.username} - {form_data.password}")
+    '''
+
+    '''
+    secure_headers.set_headers(response)
+
     user = await authenticate_user(session, form_data.username, form_data.password)
     if not user:
         raise credentials_exception
@@ -87,20 +96,26 @@ async def login_for_access_token(
     }
 
 
-@router.post('/sign-up', dependencies=[Depends(limiter)])
+@router.post('/sign-up', response_model=UserResponse, dependencies=[Depends(limiter)])
 async def sign_up(
+    response: Response, 
+    user: Annotated[UserRequest, Body],
     session: Annotated[AsyncSession, Depends(get_db)],
-    username: str,
-    password: str
 ):
-    user = await create_user(session, username, password)
-    return user
+    '''
+    
+    '''
+    secure_headers.set_headers(response)
+
+    user = await create_user(session, user.username, user.password)
+    user_response = UserResponse(id=user.id, username=user.username, hashed_password=user.hashed_password)
+    return user_response
 
 
 @router.get('/messages', response_model=MessageListResponse, dependencies=[Depends(limiter)])
 async def get_messages(
-    user: Annotated[get_current_user, Depends()],
     response: Response, 
+    user: Annotated[get_current_user, Depends()],
     session: Annotated[AsyncSession, Depends(get_db)]
 ):
     '''
@@ -145,6 +160,7 @@ async def send_message(
     Returns the ID of the created message.
     '''
     secure_headers.set_headers(response)
+
     try:
         new_message = await create_message(
             session=session,
@@ -173,6 +189,7 @@ async def delete_message(
     Returns success status indicating whether the message was deleted.
     '''
     secure_headers.set_headers(response)
+
     try:
         success = await delete_message_from_db(session, message_request.id)
 
@@ -194,6 +211,7 @@ async def update_message(
     Returns success status indicating whether the message was updated.
     '''
     secure_headers.set_headers(response)
+
     try:
         success = await update_message_from_db(session, message_request.id, message_request.content)
 
@@ -212,6 +230,7 @@ async def websocket_endpoint(response: Response, websocket: WebSocket, username:
     Requires username as query parameter for user identification.
     '''
     secure_headers.set_headers(response)
+    
     await manager.connect(websocket, username)
     try:
         while True:
