@@ -1,17 +1,15 @@
-import { useAuth } from "@clerk/clerk-react"
-
+import { useAuth } from "../components/Auth/AuthProvider"
 import { API_BASE_URL } from "../config/api"
 
 export const useApi = () => {
-    const {getToken} = useAuth()
+    const { token } = useAuth()
 
     const makeRequest = async (endpoint, options = {}) => {
-        const token = await getToken()
         const defaultOptions = {
             headers: {
                 "Content-Type": "application/json",
-                "Authorization": `Bearer ${token}`
-            }
+                ...(token ? { "Authorization": `Bearer ${token}` } : {}),
+            },
         }
 
         const response = await fetch(API_BASE_URL + endpoint, {
@@ -21,14 +19,17 @@ export const useApi = () => {
 
         if (!response.ok) {
             const errorData = await response.json().catch(() => null)
-            if (response.status === 429) {
-                throw new Error("Error")
+            if (response.status === 401) {
+                throw new Error("Authentication required")
             }
-            throw new Error(errorData?.detail || "An error occurred")
+            if (response.status === 429) {
+                throw new Error("Rate limit exceeded")
+            }
+            throw new Error(errorData?.detail || "Request failed")
         }
 
         return response.json()
     }
 
-    return {makeRequest}
+    return { makeRequest }
 }

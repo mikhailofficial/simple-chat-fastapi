@@ -1,28 +1,41 @@
-import "react"
-import {SignedIn, SignedOut, UserButton} from "@clerk/clerk-react"
-import {Outlet, Link, Navigate} from "react-router-dom"
+import React from "react"
+import { Outlet, Link, Navigate, useNavigate } from "react-router-dom"
+import { useAuth } from "../components/Auth/AuthProvider"
 
 export function Layout() {
-    return <div className="app-layout">
-        <header className="app-header">
-            <div className="header-content">
-                <h1>Simple chat</h1>
-                <nav>
-                    <SignedIn>
-                        <Link to="/">Go to the Simple Chat</Link>
-                        <UserButton />
-                    </SignedIn>
-                </nav>
-            </div>
-        </header>
+    const { isAuthenticated, signOut } = useAuth()
+    const navigate = useNavigate()
 
-        <main className="app-main">
-            <SignedOut>
-                <Navigate to="/sign-in" replace />
-            </SignedOut>
-            <SignedIn>
-                <Outlet />
-            </SignedIn>
-        </main>
-    </div>
+    const handleSignOut = () => {
+        signOut()
+        navigate("/sign-in")
+    }
+
+    return (
+        <div className="app-layout">
+            <header className="app-header">
+                <div className="header-content">
+                    <h1>Simple chat</h1>
+                    <nav>
+                        {isAuthenticated ? (
+                            <>
+                                <Link to="/">Go to the Simple Chat</Link>
+                                <button onClick={handleSignOut}>Sign Out</button>
+                            </>
+                        ) : (
+                            <>
+                                <button onClick={() => navigate("/sign-in")}>Sign In</button>
+                                <button onClick={() => navigate("/sign-up")}>Sign Up</button>
+                            </>
+                        )}
+                    </nav>
+                </div>
+            </header>
+
+            <main className="app-main">
+                {!isAuthenticated && <Navigate to="/sign-up" replace />}
+                {isAuthenticated && <Outlet />}
+            </main>
+        </div>
+    )
 }

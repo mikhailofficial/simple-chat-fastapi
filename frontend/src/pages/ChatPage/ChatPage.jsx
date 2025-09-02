@@ -1,6 +1,6 @@
 import 'react'
 import {useState, useEffect, useRef, useCallback} from 'react'
-import {useClerk} from '@clerk/clerk-react'
+import { useAuth } from '../../components/Auth/AuthProvider'
 
 import {useApi} from '../../hooks/useApi.js'
 import {useWebSocket} from '../../hooks/useWebSocket.js';
@@ -18,7 +18,8 @@ export function Chat() {
 	const messagesEndRef = useRef(null);
 	const [inputValue, setInputValue] = useState('');
 	const inputRef = useRef(null);
-	const {user} = useClerk();
+	const { user } = useAuth();
+	const username = user?.username || "";
 	const [onlineUsers, setOnlineUsers] = useState(0);
 	const dateHeadersCreatedRef = useRef(new Set());
 	const onMessage = useCallback(
@@ -39,7 +40,7 @@ export function Chat() {
 		[]
 	);
 	const {ws, sendMessage, userlist, } = useWebSocket({
-		username: user.username,
+		username: username,
 		onMessage, 
 		onOnlineCount,
 		dateHeadersCreated: dateHeadersCreatedRef.current,
@@ -109,12 +110,12 @@ export function Chat() {
 	
 	useEffect(() => {
 		const lastMessage = messages[messages.length - 1];
-			if (lastMessage && lastMessage.sender === user.username) {
+			if (lastMessage && lastMessage.sender === username) {
 			setTimeout(() => {
 				messagesEndRef.current?.scrollIntoView({ behavior: "smooth", block: "end", inline: "nearest" });
 			}, 100);
 		}
-	}, [messages,  user.username]);
+	}, [messages,  username]);
 
 	const handleSendMessage = async () => {
 		if (!inputValue.trim()) {
@@ -130,7 +131,7 @@ export function Chat() {
 				body: JSON.stringify({
 					"content": inputValue,
 					"created_at": timestamp,
-					"created_by": user.username,
+					"created_by": username,
 				}),
 			});
 
@@ -139,7 +140,7 @@ export function Chat() {
 					"id": response.id,
 					"content": inputValue,
 					"created_at": timestamp,
-					"created_by": user.username
+					"created_by": username
 				});
 			}
 			else {
@@ -206,7 +207,7 @@ export function Chat() {
 			<div className={styles['chat-container']}>
 				<ChatMessages 
 					messages={messages}
-					user={user.username}
+					user={username}
 					messagesEndRef={messagesEndRef}
 					onDeleteMessage={handleDeleteMessage}
 					onUpdateMessage={handleUpdateMessage}
