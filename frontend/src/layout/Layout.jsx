@@ -19,7 +19,6 @@ export function Layout() {
                     <nav>
                         {isAuthenticated ? (
                             <>
-                                <Link to="/">Go to the Simple Chat</Link>
                                 <button onClick={handleSignOut}>Sign Out</button>
                             </>
                         ) : (

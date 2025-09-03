@@ -50,4 +50,15 @@ body {
   padding: 0 1rem;
 }
 
+.header-content nav {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-spacer {
+  flex: 1;
+  min-width: 50px;
+}
+
 

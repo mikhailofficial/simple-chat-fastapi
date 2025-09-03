@@ -48,4 +48,21 @@
   border-radius: 6px;
 }
 
+.link {
+  text-align: center;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #656d76;
+}
+
+.link a {
+  color: #0d5bd7;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.link a:hover {
+  text-decoration: underline;
+}
+
 

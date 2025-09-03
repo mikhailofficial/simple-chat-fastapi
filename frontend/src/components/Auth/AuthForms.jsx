@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { useAuth } from "./AuthProvider"
+import { Link } from "react-router-dom"
 import styles from "./AuthForms.module.css"
 
 export function SignInForm() {
@@ -56,6 +57,9 @@ export function SignInForm() {
             <button type="submit" disabled={loading}>
                 {loading ? "Signing in..." : "Sign In"}
             </button>
+            <div className={styles.link}>
+                Don't have an account? <Link to="/sign-up">Sign Up</Link>
+            </div>
         </form>
     )
 }
@@ -75,7 +79,7 @@ export function SignUpForm() {
             return
         }
         
-        if (form.password.length < 3) {
+        if (form.password.length < 8) {
             setError("Password must be at least 8 characters")
             return
         }
@@ -119,6 +123,9 @@ export function SignUpForm() {
             <button type="submit" disabled={loading}>
                 {loading ? "Signing up..." : "Sign Up"}
             </button>
+            <div className={styles.link}>
+                Already have an account? <Link to="/sign-in">Sign In</Link>
+            </div>
         </form>
     )
 }
