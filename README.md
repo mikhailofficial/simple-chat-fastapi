@@ -5,7 +5,7 @@ A modern, real-time chat application built with React, FastAPI, and WebSocket te
 ## 🚀 Features
 
 - **Real-time messaging** with WebSocket connections
-- **User authentication** using Clerk
+- **User authentication** using custom JWT
 - **Online user tracking** and user list
 - **Responsive design** with modern UI
 - **System messages** for user join/leave notifications
@@ -15,7 +15,7 @@ A modern, real-time chat application built with React, FastAPI, and WebSocket te
 ### Frontend
 - **React 19** - Modern React with hooks
 - **Vite** - Fast build tool and dev server
-- **Clerk** - Authentication and user management
+- **JWT** - Authentication and user management
 - **CSS Modules** - Scoped styling
 
 ### Backend
@@ -34,7 +34,7 @@ A modern, real-time chat application built with React, FastAPI, and WebSocket te
 ### Prerequisites
 
 - **Docker** and **Docker Compose** installed
-- **Clerk account** for authentication
+- **JWT** for authentication
 
 ### Installation
 
