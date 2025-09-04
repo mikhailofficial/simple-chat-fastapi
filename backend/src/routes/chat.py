@@ -82,7 +82,7 @@ async def login_for_access_token(
     session: Annotated[AsyncSession, Depends(get_db)]
 ):
     '''
-
+    Authenticate user and return JWT access token.
     '''
     secure_headers.set_headers(response)
 
@@ -103,7 +103,7 @@ async def sign_up(
     session: Annotated[AsyncSession, Depends(get_db)],
 ):
     '''
-    
+    Register a new user account.
     '''
     secure_headers.set_headers(response)
 
@@ -121,6 +121,7 @@ async def get_messages(
     '''
     Retrieve all messages from the chat.
     Returns a list of all messages with their details including id, sender, content, and timestamp.
+    Results are cached in Redis for 1 hour.
     '''
     secure_headers.set_headers(response)
 
@@ -157,7 +158,7 @@ async def send_message(
     '''
     Create and send a new message to the chat.
     Validates message content and stores it in the database.
-    Returns the ID of the created message.
+    Returns the ID of the created message. Invalidates message cache.
     '''
     secure_headers.set_headers(response)
 
@@ -187,6 +188,7 @@ async def delete_message(
     '''
     Delete a specific message from the chat by its ID.
     Returns success status indicating whether the message was deleted.
+    Invalidates message cache.
     '''
     secure_headers.set_headers(response)
 
@@ -207,8 +209,9 @@ async def update_message(
     session: Annotated[AsyncSession, Depends(get_db)]
 ):
     '''
-    Update content field of a specific message from the chat by its ID
+    Update content field of a specific message from the chat by its ID.
     Returns success status indicating whether the message was updated.
+    Invalidates message cache.
     '''
     secure_headers.set_headers(response)
 
