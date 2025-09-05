@@ -129,3 +129,15 @@ async def create_user(session: AsyncSession, username: str, password: str):
     await session.refresh(user)
 
     return user
+
+
+async def change_password_in_db(session: AsyncSession, username: str, old_password: str, new_password: str):
+    stmt = select(User).filter_by(username=username)
+    result = await session.execute(stmt)
+    user = result.scalars().first()
+
+    if user and verify_password(old_password, user.hashed_password):
+        user.hashed_password = get_password_hash(new_password)
+        await session.commit()
+        return True
+    return False

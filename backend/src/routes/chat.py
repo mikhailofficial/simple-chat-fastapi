@@ -15,7 +15,8 @@ from ..database.db import (
     get_all_messages,
     create_message,
     delete_message_from_db,
-    update_message_from_db
+    update_message_from_db,
+    change_password_in_db
 )
 
 from ..schemas.message import (
@@ -30,7 +31,9 @@ from ..schemas.message import (
 from ..schemas.user import (
     TokenResponse,
     UserRequest,
-    UserResponse
+    UserResponse,
+    ChangeUserPasswordRequest,
+    ChangeUserPasswordResponse
 )
 
 from ..core.redis_client import redis_connection
@@ -110,6 +113,22 @@ async def sign_up(
     user = await create_user(session, user.username, user.password)
     user_response = UserResponse(id=user.id, username=user.username, hashed_password=user.hashed_password)
     return user_response
+
+
+@router.patch('/change-password', response_model=ChangeUserPasswordResponse, dependencies=[Depends(limiter)])
+async def change_password(
+    response: Response,
+    request: Annotated[ChangeUserPasswordRequest, Body],
+    session: Annotated[AsyncSession, Depends(get_db)]
+):
+    '''
+    
+    '''
+    secure_headers.set_headers(response)
+
+    success = await change_password_in_db(session, request.username, request.old_password, request.new_password)
+    success_response = ChangeUserPasswordResponse(success=success)
+    return success_response
 
 
 @router.get('/messages', response_model=MessageListResponse, dependencies=[Depends(limiter)])
