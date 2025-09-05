@@ -11,6 +11,7 @@ export default function ChatMessages({ messages, user, messagesEndRef, onDeleteM
                     text={msg.text}
                     sender={msg.sender}
                     timestamp={msg.timestamp} 
+                    updatedAt={msg.updatedAt}
                     messageId={msg.id}
                     onDelete={onDeleteMessage}
                     onUpdate={onUpdateMessage}

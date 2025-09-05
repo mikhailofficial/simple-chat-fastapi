@@ -61,6 +61,12 @@
   color: #888;
 }
 
+.editedLabel {
+  margin-left: 6px;
+  color: #6b7280;
+  font-size: 0.85em;
+}
+
 .actionButtons {
   position: absolute;
   top: 50px;

@@ -5,6 +5,7 @@ from datetime import datetime
 class MessageBase(BaseModel):
     content: str = Field(max_length=100, description="The content of the message", examples=["Hello world!"])
     created_at: datetime = Field(description="The datetime when the message has been created")
+    updated_at: datetime | None = Field(default=None, description="The datetime when the message has been updated")
     created_by: str = Field(description="The sender of the message")
 
 

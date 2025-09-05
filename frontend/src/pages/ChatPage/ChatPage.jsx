@@ -88,10 +88,12 @@ export function Chat() {
 						dateHeadersCreatedRef.current.add(messageDate.toDateString());
 					}
 
+					const updatedAtParsed = element.updated_at ? parseTimestamp(element.updated_at) : null;
 					formattedMessages.push({
 						id: element.id,
 						text: element.content,
 						timestamp: messageDate.toLocaleTimeString(),
+						updatedAt: updatedAtParsed ? updatedAtParsed.toLocaleTimeString() : null,
 						sender: element.created_by,
 					});
 				})
@@ -192,9 +194,10 @@ export function Chat() {
 					"content": newContent
 				}),
 			});
+			const nowLabel = new Date().toLocaleTimeString();
 			setMessages(prev => prev.map(message => 
 				message.id === messageId 
-					? { ...message, text: newContent }
+					? { ...message, text: newContent, updatedAt: nowLabel }
 					: message
 			));
 		} catch(err) {

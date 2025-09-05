@@ -11,6 +11,7 @@ class Message(Base):
     id = Column(Integer, primary_key=True, index=True)
     content = Column(String, nullable=False)
     created_at = Column(type_=TIMESTAMP(timezone=True), nullable=False)
+    updated_at = Column(type_=TIMESTAMP(timezone=True), default=None)
     created_by = Column(String, nullable=False)
 
 
@@ -19,5 +20,6 @@ class Message(Base):
             id=self.id,
             content=self.content,
             created_at=self.created_at,
+            updated_at=self.updated_at,
             created_by=self.created_by        
         )

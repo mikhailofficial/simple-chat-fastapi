@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from datetime import datetime
+from datetime import datetime, timezone
 from passlib.context import CryptContext
 
 from sqlalchemy import select
@@ -93,6 +93,7 @@ async def update_message_from_db(session: AsyncSession, id: int, content: str):
 
     if message:
         message.content = content
+        message.updated_at = datetime.now(timezone.utc)
         await session.commit()
         return True
     return False

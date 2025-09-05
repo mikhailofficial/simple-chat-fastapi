@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import styles from './Message.module.css'
 
-export default function Message({ user, text, sender, timestamp, onDelete, onUpdate, messageId }) {
+export default function Message({ user, text, sender, timestamp, updatedAt, onDelete, onUpdate, messageId }) {
     const [isHovered, setIsHovered] = useState(false);
     const [isEditing, setIsEditing] = useState(false);
     const [editText, setEditText] = useState(text);
@@ -91,7 +91,14 @@ export default function Message({ user, text, sender, timestamp, onDelete, onUpd
             )}
             <div className={styles['message-info']}>
                 <span className={styles.sender}>{sender}</span>
-                <span className={styles.timestamp}>{timestamp}</span>
+                <span className={styles.timestamp}>
+                    {timestamp}
+                    {updatedAt && (
+                        <span className={styles.editedLabel} title={`Edited at ${updatedAt}`}>
+                            · edited {updatedAt}
+                        </span>
+                    )}
+                </span>
             </div>
             {isEditing ? (
                 <div className={styles.editContainer}>
