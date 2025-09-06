@@ -1,9 +1,6 @@
 import redis.asyncio as redis
-import os
 
+from ..config import REDIS_HOST, REDIS_PORT
 
-redis_host = os.getenv("REDIS_HOST", "redis")
-redis_port = os.getenv("REDIS_PORT", "6379")
-redis_url = f"redis://{redis_host}:{redis_port}"
-
+redis_url = f"redis://{REDIS_HOST}:{REDIS_PORT}"
 redis_connection = redis.from_url(url=redis_url, decode_responses=True)

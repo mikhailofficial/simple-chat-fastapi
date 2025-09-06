@@ -1,5 +1,3 @@
-import os
-from dotenv import load_dotenv
 from datetime import datetime, timezone
 from passlib.context import CryptContext
 
@@ -7,22 +5,13 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio.engine import create_async_engine
 from sqlalchemy.ext.asyncio.session import async_sessionmaker, AsyncSession
 
+from ..config import DATABASE_URL
 from .models.base import Base
 from .models.message import Message
 from .models.user import User
 
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-load_dotenv()
-
-POSTGRES_USER = os.getenv("POSTGRES_USER")
-POSTGRES_PASSWORD = os.getenv("POSTGRES_PASSWORD")
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-POSTGRES_DB = os.getenv("POSTGRES_DB")
-DATABASE_URL = f"postgresql+asyncpg://{POSTGRES_USER}:{POSTGRES_PASSWORD}@{DB_HOST}:{DB_PORT}/{POSTGRES_DB}"
 
 engine = create_async_engine(
     url=DATABASE_URL, 
