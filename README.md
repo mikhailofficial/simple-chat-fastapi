@@ -24,6 +24,10 @@ A modern, real-time chat application built with React, FastAPI, and WebSocket te
 - **PostgreSQL** - Primary database
 - **Redis** - Caching and session management
 - **WebSocket** - Real-time bidirectional communication
+ - **Uvicorn** - ASGI server
+ - **Alembic** - Database migrations
+ - **fastapi-limiter** - Rate limiting backed by Redis
+ - **Python logging** - Centralized app logging
 
 ## 🖼️ Screenshots
 
@@ -84,14 +88,21 @@ docker compose down
 simple-chat-fastapi/
 ├── backend/
 │   ├── src/
-│   │   ├── app.py              # FastAPI application
-│   │   ├── routes/             # API routes
-│   │   ├── database/           # Database models and operations
-│   │   ├── core/               # Core utilities
-│   │   ├── .env.example        # Environment variables template
-│   │   └── .env                # Your environment variables (not in git)
-│   ├── server.py               # Server entry point
-│   └── Dockerfile              # Backend container
+│   │   ├── app.py               # FastAPI application (lifespan, middleware, routers)
+│   │   ├── routes/              # API routes (e.g., chat endpoints, WebSocket)
+│   │   ├── database/            # DB engine, sessions, CRUD helpers, models
+│   │   │   ├── models/          # SQLAlchemy models
+│   │   ├── core/                # Core utilities (e.g., Redis client)
+│   │   ├── schemas/             # Pydantic schemas
+│   │   ├── dependencies.py      # FastAPI dependencies (auth helpers, etc.)
+│   │   ├── config.py            # Settings and config
+│   │   ├── utils.py             # JWT utilities and helpers
+│   │   ├── .env.example         # Environment variables template
+│   │   └── .env                 # Your environment variables (not in git)
+│   ├── migrations/              # Alembic migration scripts
+│   ├── logging_config.ini       # Centralized Python logging configuration
+│   ├── server.py                # ASGI app export; loads logging config
+│   └── Dockerfile               # Backend container
 ├── frontend/
 │   ├── src/
 │   │   ├── components/         # React components
