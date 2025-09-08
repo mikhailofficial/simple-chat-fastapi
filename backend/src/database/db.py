@@ -1,4 +1,5 @@
 from datetime import datetime, timezone
+import logging
 from passlib.context import CryptContext
 
 from sqlalchemy import select
@@ -11,6 +12,7 @@ from .models.message import Message
 from .models.user import User
 
 
+logger = logging.getLogger(__name__)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 engine = create_async_engine(
@@ -32,7 +34,7 @@ async def get_db():
         try:
             yield session
         except Exception as e:
-            print(str(e))
+            logger.exception("DB session error")
         finally:
             await session.close()
 

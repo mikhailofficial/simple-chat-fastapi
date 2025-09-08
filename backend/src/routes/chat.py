@@ -1,5 +1,7 @@
 from typing import Annotated
 import json
+import logging
+from os import path
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, WebSocket, WebSocketDisconnect, Response
 from fastapi.security import OAuth2PasswordRequestForm
@@ -45,6 +47,8 @@ from ..dependencies import get_current_user
 
 CACHE_KEY_MESSAGES = "chat:messages"
 
+logger = logging.getLogger(__name__)
+
 class ConnectionManager:
     def __init__(self):
         self.activate_connections: dict[WebSocket, str] = {}
@@ -70,7 +74,6 @@ class ConnectionManager:
 
 manager = ConnectionManager()
 
-
 router = APIRouter()
 
 secure_headers = Secure.with_default_headers()
@@ -91,8 +94,10 @@ async def login_for_access_token(
 
     user = await authenticate_user(session, form_data.username, form_data.password)
     if not user:
+        logger.warning("Authentication failed: user not found or bad credentials")
         raise credentials_exception
     access_token = create_access_token({"sub": user.username})
+    logger.info("User authenticated")
     return {
         "access_token": access_token,
         "token_type": "bearer"
@@ -112,6 +117,7 @@ async def sign_up(
 
     user = await create_user(session, user.username, user.password)
     user_response = UserResponse(id=user.id, username=user.username, hashed_password=user.hashed_password)
+    logger.info("User registered")
     return user_response
 
 
@@ -128,6 +134,10 @@ async def change_password(
 
     success = await change_password_in_db(session, request.username, request.old_password, request.new_password)
     success_response = ChangeUserPasswordResponse(success=success)
+    if success:
+        logger.info("Password changed")
+    else:
+        logger.warning("Password change failed: validation or user mismatch")
     return success_response
 
 
@@ -148,6 +158,7 @@ async def get_messages(
     if cached_messages_json:
         cached_payload = json.loads(cached_messages_json)
         response.headers["X-Cache"] = "HIT"
+        logger.debug("Messages cache hit")
         return MessageListResponse(**cached_payload)
 
     try:
@@ -163,8 +174,10 @@ async def get_messages(
         await redis_connection.set(CACHE_KEY_MESSAGES, serialized, ex=3600)
 
         response.headers["X-Cache"] = "MISS"
+        logger.debug("Messages cache miss; fetched from DB and cached")
         return messages_response
     except Exception as e:
+        logger.exception("Error fetching or caching messages")
         raise HTTPException(status_code=500, detail=str(e))
 
 
@@ -193,8 +206,10 @@ async def send_message(
 
         message_response = CreateMessageResponse(id=new_message.id)
 
+        logger.info("Message created")
         return message_response
     except Exception as e:
+        logger.exception("Error creating message")
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -216,8 +231,10 @@ async def delete_message(
 
         await redis_connection.delete(CACHE_KEY_MESSAGES)
 
+        logger.info("Message deleted")
         return DeleteMessageResponse(success=success)
     except Exception as e:
+        logger.exception("Error deleting message")
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -239,8 +256,10 @@ async def update_message(
 
         await redis_connection.delete(CACHE_KEY_MESSAGES)
 
+        logger.info("Message updated")
         return UpdateMessageResponse(success=success)
     except Exception as e:
+        logger.exception("Error updating message")
         raise HTTPException(status_code=400, detail=str(e))
 
 
@@ -253,11 +272,13 @@ async def websocket_endpoint(response: Response, websocket: WebSocket, username:
     '''
     secure_headers.set_headers(response)
     
+    logger.info("WebSocket connected")
     await manager.connect(websocket, username)
     try:
         while True:
             data = await websocket.receive_text()
             await manager.broadcast(data)
     except WebSocketDisconnect:
+        logger.info("WebSocket disconnected")
         await manager.disconnect(websocket)
 

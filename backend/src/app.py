@@ -1,8 +1,6 @@
-import os
 from os import path
 from contextlib import asynccontextmanager
 import logging
-from logging.config import fileConfig
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -13,17 +11,15 @@ from .routes.chat import router
 from .core.redis_client import redis_connection
 
 
-logging_config_file_path = path.join(path.dirname(path.abspath(__file__)), "../logging_config.ini")
-fileConfig(logging_config_file_path)
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(_: FastAPI):
-    logger.debug("Initializing FastAPILimiter")
+    logger.info("Initializing rate limiter")
     await FastAPILimiter.init(redis_connection)
     yield
-    logger.debug("Closing FastAPILimiter")
+    logger.info("Closing rate limiter")
     await FastAPILimiter.close()
 
 app = FastAPI(lifespan=lifespan)
