@@ -1,4 +1,3 @@
-from os import path
 from contextlib import asynccontextmanager
 import logging
 

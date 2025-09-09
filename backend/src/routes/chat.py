@@ -1,7 +1,6 @@
 from typing import Annotated
 import json
 import logging
-from os import path
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Body, WebSocket, WebSocketDisconnect, Response
 from fastapi.security import OAuth2PasswordRequestForm
@@ -128,17 +127,18 @@ async def change_password(
     session: Annotated[AsyncSession, Depends(get_db)]
 ):
     '''
-    
+    Change user password.
+    Validates old password and updates to new password.
     '''
     secure_headers.set_headers(response)
 
     success = await change_password_in_db(session, request.username, request.old_password, request.new_password)
-    success_response = ChangeUserPasswordResponse(success=success)
-    if success:
-        logger.info("Password changed")
-    else:
+    if not success:
         logger.warning("Password change failed: validation or user mismatch")
-    return success_response
+        raise HTTPException(status_code=400, detail="Password change failed: validation or user mismatch")
+    
+    logger.info("Password changed")
+    return ChangeUserPasswordResponse(success=success)
 
 
 @router.get('/messages', response_model=MessageListResponse, dependencies=[Depends(limiter)])
@@ -272,13 +272,16 @@ async def websocket_endpoint(response: Response, websocket: WebSocket, username:
     '''
     secure_headers.set_headers(response)
     
-    logger.info("WebSocket connected")
+    logger.info(f"WebSocket connection attempt for user: {username}")
     await manager.connect(websocket, username)
     try:
         while True:
             data = await websocket.receive_text()
             await manager.broadcast(data)
     except WebSocketDisconnect:
-        logger.info("WebSocket disconnected")
+        logger.info(f"WebSocket disconnected for user: {username}")
+        await manager.disconnect(websocket)
+    except Exception as e:
+        logger.error(f"WebSocket error for user {username}: {e}")
         await manager.disconnect(websocket)
 
