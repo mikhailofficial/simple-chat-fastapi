@@ -39,9 +39,15 @@ from ..schemas.user import (
 
 from ..core.redis_client import redis_connection
 
-from ..utils import credentials_exception, create_access_token
+from ..utils import create_access_token
 
 from ..dependencies import get_current_user
+
+from ..exceptions import (
+    AuthenticationError,
+    DuplicateUserError,
+    ChangingPasswordError
+)
 
 
 CACHE_KEY_MESSAGES = "chat:messages"
@@ -93,9 +99,9 @@ async def login_for_access_token(
 
     user = await authenticate_user(session, form_data.username, form_data.password)
     if not user:
-        logger.warning("Authentication failed: user not found or bad credentials")
-        raise credentials_exception
+        raise AuthenticationError(username=form_data.username)
     access_token = create_access_token({"sub": user.username})
+
     logger.info("User authenticated")
     return {
         "access_token": access_token,
@@ -115,7 +121,10 @@ async def sign_up(
     secure_headers.set_headers(response)
 
     user = await create_user(session, user.username, user.password)
+    if not user:
+        raise DuplicateUserError(username=user.username)
     user_response = UserResponse(id=user.id, username=user.username, hashed_password=user.hashed_password)
+
     logger.info("User registered")
     return user_response
 
@@ -134,8 +143,7 @@ async def change_password(
 
     success = await change_password_in_db(session, request.username, request.old_password, request.new_password)
     if not success:
-        logger.warning("Password change failed: validation or user mismatch")
-        raise HTTPException(status_code=400, detail="Password change failed: validation or user mismatch")
+        raise ChangingPasswordError(username=request.username)
     
     logger.info("Password changed")
     return ChangeUserPasswordResponse(success=success)

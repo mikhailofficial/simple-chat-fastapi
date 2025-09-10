@@ -116,7 +116,10 @@ async def authenticate_user(session: AsyncSession, username: str, password: str)
 
 async def create_user(session: AsyncSession, username: str, password: str):
     hashed_password = get_password_hash(password)
-    user = User(username=username, hashed_password=hashed_password)
+    try:
+        user = User(username=username, hashed_password=hashed_password)
+    except Exception:
+        return False
     session.add(user)
     await session.commit()
     await session.refresh(user)
