@@ -98,8 +98,6 @@ async def login_for_access_token(
     secure_headers.set_headers(response)
 
     user = await authenticate_user(session, form_data.username, form_data.password)
-    if not user:
-        raise AuthenticationError(username=form_data.username)
     access_token = create_access_token({"sub": user.username})
 
     logger.info("User authenticated")
@@ -121,8 +119,6 @@ async def sign_up(
     secure_headers.set_headers(response)
 
     user = await create_user(session, user.username, user.password)
-    if not user:
-        raise DuplicateUserError(username=user.username)
     user_response = UserResponse(id=user.id, username=user.username, hashed_password=user.hashed_password)
 
     logger.info("User registered")
@@ -142,8 +138,6 @@ async def change_password(
     secure_headers.set_headers(response)
 
     success = await change_password_in_db(session, request.username, request.old_password, request.new_password)
-    if not success:
-        raise ChangingPasswordError(username=request.username)
     
     logger.info("Password changed")
     return ChangeUserPasswordResponse(success=success)
