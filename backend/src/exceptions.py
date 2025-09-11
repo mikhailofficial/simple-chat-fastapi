@@ -2,8 +2,8 @@ from fastapi import status
 from fastapi.exceptions import HTTPException
 
 
-class ChatAPIException(HTTPException):
-    def __init__(self, status_code: int, detail: str, headers: str | None):
+class UserException(HTTPException):
+    def __init__(self, status_code: int, detail: str, headers: str):
         super().__init__(
             status_code=status_code,
             detail=detail,
@@ -11,7 +11,7 @@ class ChatAPIException(HTTPException):
         )
 
 
-class AuthenticationError(ChatAPIException):
+class AuthenticationError(UserException):
     def __init__(self, username: str):
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -23,7 +23,7 @@ class AuthenticationError(ChatAPIException):
         )
 
 
-class DuplicateUserError(ChatAPIException):
+class DuplicateUserError(UserException):
     def __init__(self, username: str):
         super().__init__(
             status_code=status.HTTP_409_CONFLICT,
@@ -34,7 +34,7 @@ class DuplicateUserError(ChatAPIException):
         )
 
 
-class ChangingPasswordError(ChatAPIException):
+class ChangingPasswordError(UserException):
     def __init__(self, username: str):
         super().__init__(
             status_code=status.HTTP_400_BAD_REQUEST,

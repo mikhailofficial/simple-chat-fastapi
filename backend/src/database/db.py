@@ -52,6 +52,7 @@ async def get_all_messages(session: AsyncSession):
     stmt = select(Message).order_by(Message.id)
     result = await session.execute(stmt)
     messages = result.scalars().all()
+    
     return messages
 
 

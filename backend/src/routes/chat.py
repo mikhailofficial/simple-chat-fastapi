@@ -43,12 +43,6 @@ from ..utils import create_access_token
 
 from ..dependencies import get_current_user
 
-from ..exceptions import (
-    AuthenticationError,
-    DuplicateUserError,
-    ChangingPasswordError
-)
-
 
 CACHE_KEY_MESSAGES = "chat:messages"
 
@@ -186,6 +180,7 @@ async def get_messages(
 @router.post('/send-message', response_model=CreateMessageResponse, dependencies=[Depends(limiter)])
 async def send_message(
     response: Response,
+    user: Annotated[get_current_user, Depends()],
     message_request: Annotated[CreateMessageRequest, Body],
     session: Annotated[AsyncSession, Depends(get_db)]
 ):
@@ -218,6 +213,7 @@ async def send_message(
 @router.delete('/delete-message', response_model=DeleteMessageResponse, dependencies=[Depends(limiter)])
 async def delete_message(
     response: Response,
+    user: Annotated[get_current_user, Depends()],
     message_request: Annotated[DeleteMessageRequest, Body],
     session: Annotated[AsyncSession, Depends(get_db)]
 ):
@@ -243,6 +239,7 @@ async def delete_message(
 @router.patch('/update-message', response_model=UpdateMessageResponse, dependencies=[Depends(limiter)])
 async def update_message(
     response: Response,
+    user: Annotated[get_current_user, Depends()],
     message_request: Annotated[UpdateMessageRequest, Body],
     session: Annotated[AsyncSession, Depends(get_db)]
 ):
@@ -266,7 +263,12 @@ async def update_message(
 
 
 @router.websocket('/ws')
-async def websocket_endpoint(response: Response, websocket: WebSocket, username: Annotated[str, Query]):
+async def websocket_endpoint(
+    response: Response,
+    user: Annotated[get_current_user, Depends()],
+    websocket: WebSocket,
+    username: Annotated[str, Query]
+):
     '''
     WebSocket endpoint for real-time chat functionality.
     Establishes connection for live message broadcasting and user status updates.
