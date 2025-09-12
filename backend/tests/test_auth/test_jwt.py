@@ -1,5 +1,4 @@
 import pytest
-import pytest_asyncio
 
 from src.utils import create_access_token, verify_token
 from src.dependencies import get_current_user

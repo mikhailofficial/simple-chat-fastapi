@@ -80,27 +80,6 @@ secure_headers = Secure.with_default_headers()
 limiter = RateLimiter(times=100, seconds=60)
 
 
-@router.post('/token', response_model=TokenResponse, dependencies=[Depends(limiter)])
-async def login_for_access_token(
-    response: Response,
-    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
-    session: Annotated[AsyncSession, Depends(get_db)]
-):
-    '''
-    Authenticate user and return JWT access token.
-    '''
-    secure_headers.set_headers(response)
-
-    user = await authenticate_user(session, form_data.username, form_data.password)
-    access_token = create_access_token({"sub": user.username})
-
-    logger.info("User authenticated")
-    return {
-        "access_token": access_token,
-        "token_type": "bearer"
-    }
-
-
 @router.post('/sign-up', response_model=UserResponse, dependencies=[Depends(limiter)])
 async def sign_up(
     response: Response, 
@@ -117,6 +96,25 @@ async def sign_up(
 
     logger.info("User registered")
     return user_response
+
+
+@router.post('/token', response_model=TokenResponse, dependencies=[Depends(limiter)])
+async def login_for_access_token(
+    response: Response,
+    form_data: Annotated[OAuth2PasswordRequestForm, Depends()],
+    session: Annotated[AsyncSession, Depends(get_db)]
+):
+    '''
+    Authenticate user and return JWT access token.
+    '''
+    secure_headers.set_headers(response)
+
+    user = await authenticate_user(session, form_data.username, form_data.password)
+    access_token = create_access_token({"sub": user.username})
+    token_response = TokenResponse(access_token=access_token, token_type="bearer")
+
+    logger.info("User authenticated")
+    return token_response
 
 
 @router.patch('/change-password', response_model=ChangeUserPasswordResponse, dependencies=[Depends(limiter)])
